@@ -17,6 +17,7 @@ COPY --from=frontend-builder /app/frontend/dist /app/static
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
+RUN mkdir /data
 COPY list.json .
 COPY cube.json .
 COPY number.json .
