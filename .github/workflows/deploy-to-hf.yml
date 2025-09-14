@@ -38,4 +38,4 @@ jobs:
         # 运行的核心命令
         # 我们在这里构建了一个包含认证信息的 git URL
         # 格式: https://<你的用户名>:<你的Token>@huggingface.co/spaces/<你的用户名>/<你的空间名>
-        run: git push https://enty411:$HF_TOKEN@huggingface.co/spaces/enty411/nikke-union-management main
+        run: git push --force https://enty411:$HF_TOKEN@huggingface.co/spaces/enty411/nikke-union-management main
