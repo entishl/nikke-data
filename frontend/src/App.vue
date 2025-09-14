@@ -24,11 +24,11 @@
         <button @click="activeTab = 'unions'" :class="{ active: activeTab === 'unions' }">联盟管理</button>
         <button @click="activeTab = 'players'" :class="{ active: activeTab === 'players' }">玩家管理</button>
         <button @click="activeTab = 'characters'" :class="{ active: activeTab === 'characters' }">角色总表</button>
-        <button @click="activeTab = 'fire'" :class="{ active: activeTab === 'fire' }">燃烧</button>
-        <button @click="activeTab = 'water'" :class="{ active: activeTab === 'water' }">水冷</button>
-        <button @click="activeTab = 'electronic'" :class="{ active: activeTab === 'electronic' }">电击</button>
-        <button @click="activeTab = 'iron'" :class="{ active: activeTab === 'iron' }">铁甲</button>
-        <button @click="activeTab = 'wind'" :class="{ active: activeTab === 'wind' }">风压</button>
+        <button @click="activeTab = 'fire'" class="tab-fire" :class="{ active: activeTab === 'fire' }">燃烧</button>
+        <button @click="activeTab = 'water'" class="tab-water" :class="{ active: activeTab === 'water' }">水冷</button>
+        <button @click="activeTab = 'electronic'" class="tab-electronic" :class="{ active: activeTab === 'electronic' }">电击</button>
+        <button @click="activeTab = 'iron'" class="tab-iron" :class="{ active: activeTab === 'iron' }">铁甲</button>
+        <button @click="activeTab = 'wind'" class="tab-wind" :class="{ active: activeTab === 'wind' }">风压</button>
       </div>
 
       <div v-if="activeTab === 'characters'">
@@ -168,9 +168,24 @@ main {
 }
 
 .tabs button.active {
-  background-color: #42b983;
+  background-color: black;
   color: white;
-  border-color: #42b983;
+  border-color: black;
+}
+
+.tabs .tab-fire { background-color: #f44336; color: white; border-color: #f44336;}
+.tabs .tab-water { background-color: #2196F3; color: white; border-color: #2196F3;}
+.tabs .tab-electronic { background-color: #9C27B0; color: white; border-color: #9C27B0;}
+.tabs .tab-iron { background-color: #FFEB3B; color: black; border-color: #FFEB3B;}
+.tabs .tab-wind { background-color: #4CAF50; color: white; border-color: #4CAF50;}
+
+.tabs button.active.tab-fire,
+.tabs button.active.tab-water,
+.tabs button.active.tab-electronic,
+.tabs button.active.tab-iron,
+.tabs button.active.tab-wind {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
 }
 
 input[type="file"] {

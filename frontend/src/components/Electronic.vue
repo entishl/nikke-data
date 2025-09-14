@@ -355,7 +355,7 @@ th, td {
 }
 
 th {
-  background-color: #42b983;
+  background-color: #673ab7;
   color: white;
   position: relative;
 }
@@ -377,11 +377,11 @@ tbody tr:nth-child(even) {
 }
 
 .character-header {
-  background-color: #3a9d72; /* Slightly darker green */
+  background-color: #512da8; /* A slightly darker purple */
 }
 
 .detail-header {
-  background-color: #42b983;
+  background-color: #673ab7;
   top: 38px; /* Adjust based on the height of the character header row */
 }
 
