@@ -1,12 +1,28 @@
-# 使用一个包含 docker-compose 的基础镜像
-FROM docker/compose:latest
+# ---- Frontend Build Stage ----
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ .
+RUN npm run build
 
-# 设置工作目录
+# ---- Backend Final Stage ----
+FROM python:3.9-slim
 WORKDIR /app
 
-# 将您项目的所有文件（包括 docker-compose.yml、frontend/ 和 backend/ 目录）复制到容器中
-COPY . .
+# Copy built frontend from the builder stage
+COPY --from=frontend-builder /app/frontend/dist /app/static
 
-# 当容器启动时，运行 docker-compose up 命令来构建并启动您的服务
-# --build 参数会强制重新构建镜像
-CMD ["docker-compose", "up", "--build"]
+# Copy backend code and install dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/ .
+COPY list.json .
+COPY cube.json .
+COPY number.json .
+
+# Expose the port Hugging Face will use
+EXPOSE 7860
+
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

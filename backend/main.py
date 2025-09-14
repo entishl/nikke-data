@@ -1,7 +1,7 @@
 # Trigger reload
 import json
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query, Form
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -25,20 +25,6 @@ with open('../number.json', 'r', encoding='utf-8') as f:
     number_data = json.load(f)
 
 
-# CORS middleware
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:5173", # Vite default port
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Dependency to get DB session
 def get_db():
@@ -48,7 +34,7 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/filter-options")
+@app.get("/api/filter-options")
 def get_filter_options():
     nikkes = nikke_list_data.get('nikkes', [])
     
@@ -65,7 +51,7 @@ def get_filter_options():
         "use_burst_skill": use_burst_skills,
     }
 
-@app.post("/upload/")
+@app.post("/api/upload/")
 async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[int] = Form(None), db: Session = Depends(get_db)):
     successful_files = 0
     failed_files = 0
@@ -270,7 +256,7 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
     
     return {"successful_files": successful_files, "failed_files": failed_files}
 
-@app.get("/characters/", response_model=List[dict])
+@app.get("/api/characters/", response_model=List[dict])
 def get_characters(
     player_name: Optional[str] = Query(None),
     union_ids: Optional[str] = Query(None), # Changed from union_id to union_ids
@@ -357,7 +343,7 @@ def get_characters(
         })
     return result
 
-@app.get("/characters/all-unique")
+@app.get("/api/characters/all-unique")
 def get_all_unique_characters(db: Session = Depends(get_db)):
     # Query for distinct character_id, name_cn, and element from the Character table
     query = db.query(models.Character.character_id, models.Character.name_cn, models.Character.element).distinct()
@@ -371,12 +357,12 @@ def get_all_unique_characters(db: Session = Depends(get_db)):
     # Sort the results by character ID
     return sorted(unique_characters, key=lambda x: x['id'])
 
-@app.get("/settings/is-c")
+@app.get("/api/settings/is-c")
 def get_is_c_settings(db: Session = Depends(get_db)):
     settings = db.query(models.CharacterSetting).all()
     return {setting.character_id: setting.is_C for setting in settings}
 
-@app.post("/settings/is-c")
+@app.post("/api/settings/is-c")
 def update_is_c_settings(settings: dict[int, bool], db: Session = Depends(get_db)):
     for char_id, is_c in settings.items():
         setting = db.query(models.CharacterSetting).filter_by(character_id=char_id).first()
@@ -388,7 +374,7 @@ def update_is_c_settings(settings: dict[int, bool], db: Session = Depends(get_db
     db.commit()
     return {"status": "success"}
 
-@app.get("/characters/{character_db_id}")
+@app.get("/api/characters/{character_db_id}")
 def get_character_details(character_db_id: int, db: Session = Depends(get_db)):
     char = db.query(models.Character).filter(models.Character.id == character_db_id).first()
     if not char:
@@ -431,7 +417,7 @@ def get_character_details(character_db_id: int, db: Session = Depends(get_db)):
         "breakthrough_coefficient": breakthrough_coefficient,
     }
 
-@app.delete("/players/{player_name}")
+@app.delete("/api/players/{player_name}")
 def delete_player(player_name: str, db: Session = Depends(get_db)):
     # Find the player by name
     player = db.query(models.Player).filter(models.Player.name == player_name).first()
@@ -448,7 +434,7 @@ def delete_player(player_name: str, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "success", "message": f"Player {player_name} and all associated data have been deleted."}
 
-@app.delete("/clear-all-data")
+@app.delete("/api/clear-all-data")
 def clear_all_data(db: Session = Depends(get_db)):
     try:
         # The order of deletion matters due to foreign key constraints.
@@ -463,7 +449,7 @@ def clear_all_data(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"An error occurred while clearing data: {e}")
 
 
-@app.get("/players/", response_model=List[dict])
+@app.get("/api/players/", response_model=List[dict])
 def get_players(
     union_ids: Optional[str] = Query(None), # Changed from union_id to union_ids
     sort_by: Optional[str] = Query("name"),
@@ -504,7 +490,7 @@ def get_players(
     ]
 
 # Union CRUD
-@app.post("/unions/", response_model=dict)
+@app.post("/api/unions/", response_model=dict)
 def create_union(name: str, db: Session = Depends(get_db)):
     db_union = models.Union(name=name)
     db.add(db_union)
@@ -512,12 +498,12 @@ def create_union(name: str, db: Session = Depends(get_db)):
     db.refresh(db_union)
     return {"id": db_union.id, "name": db_union.name}
 
-@app.get("/unions/", response_model=List[dict])
+@app.get("/api/unions/", response_model=List[dict])
 def get_unions(db: Session = Depends(get_db)):
     unions = db.query(models.Union).all()
     return [{"id": u.id, "name": u.name} for u in unions]
 
-@app.put("/unions/{union_id}", response_model=dict)
+@app.put("/api/unions/{union_id}", response_model=dict)
 def update_union(union_id: int, name: str, db: Session = Depends(get_db)):
     db_union = db.query(models.Union).filter(models.Union.id == union_id).first()
     if not db_union:
@@ -527,7 +513,7 @@ def update_union(union_id: int, name: str, db: Session = Depends(get_db)):
     db.refresh(db_union)
     return {"id": db_union.id, "name": db_union.name}
 
-@app.delete("/unions/{union_id}", response_model=dict)
+@app.delete("/api/unions/{union_id}", response_model=dict)
 def delete_union(union_id: int, db: Session = Depends(get_db)):
     db_union = db.query(models.Union).filter(models.Union.id == union_id).first()
     if not db_union:
@@ -540,3 +526,5 @@ def delete_union(union_id: int, db: Session = Depends(get_db)):
     db.delete(db_union)
     db.commit()
     return {"status": "success"}
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")

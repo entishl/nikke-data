@@ -1,5 +1,5 @@
 ---
-title: Lucky
+title: nikke union management
 emoji: 🚀
 colorFrom: pink
 colorTo: blue
@@ -11,15 +11,18 @@ app_port: 7860
 
 这是一个用于管理游戏角色数据的全栈应用。
 
-## 如何运行
+## 如何在本地运行
 
-1.  **构建并运行 Docker 容器:**
-
+1.  **构建 Docker 镜像:**
     ```bash
-    docker-compose up --build
+    docker build -t lucky-app .
     ```
 
-2.  **访问应用:**
+2.  **运行 Docker 容器:**
+    ```bash
+    docker run -p 7860:7860 lucky-app
+    ```
 
-    *   前端: [http://localhost:8080](http://localhost:8080)
-    *   后端 API: [http://localhost:8000/docs](http://localhost:8000/docs)
+3.  **访问应用:**
+    *   应用: [http://localhost:7860](http://localhost:7860)
+    *   API 文档: [http://localhost:7860/docs](http://localhost:7860/docs)
