@@ -13,15 +13,15 @@ models.create_db_and_tables()
 app = FastAPI()
 
 # Load nikke list for static data
-with open('../list.json', 'r', encoding='utf-8') as f:
+with open('list.json', 'r', encoding='utf-8') as f:
     nikke_list_data = json.load(f)
 nikke_static_data = {nikke['id']: nikke for nikke in nikke_list_data['nikkes']}
 
-with open('../cube.json', 'r', encoding='utf-8') as f:
+with open('cube.json', 'r', encoding='utf-8') as f:
     cube_data = json.load(f)
 cube_level_map = {item['cube_level']: item for item in cube_data}
 
-with open('../number.json', 'r', encoding='utf-8') as f:
+with open('number.json', 'r', encoding='utf-8') as f:
     number_data = json.load(f)
 
 
