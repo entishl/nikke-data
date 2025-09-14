@@ -1,7 +1,12 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, sessionmaker, DeclarativeBase
 
-DATABASE_URL = "sqlite:///game_characters.db"
+# Define the data directory and ensure it exists
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
+
+DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'game_characters.db')}"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
