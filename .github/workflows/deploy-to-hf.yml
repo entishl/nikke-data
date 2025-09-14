@@ -1,52 +1,41 @@
-# .github/workflows/deploy-to-hf.yml
+# 这个工作流的名称，会显示在 GitHub 的 Actions 标签页中
+name: Sync to Hugging Face Spaces
 
-name: Deploy to Hugging Face Spaces
-
+# --- 触发条件 ---
+# 1. 当有代码被推送到 main 分支时
+# 2. 允许你在 Actions 页面手动点击运行
 on:
-  # 当推送到 main 分支时触发
   push:
     branches:
       - main
-  # 允许手动触发
   workflow_dispatch:
 
+# --- 工作任务 ---
 jobs:
-  deploy:
-    runs-on: ubuntu-latest # 使用最新的 Ubuntu 运行环境
-
+  # 定义一个名为 'sync-to-hub' 的任务
+  sync-to-hub:
+    # 在最新的 Ubuntu 虚拟环境中运行
+    runs-on: ubuntu-latest
+    
+    # 任务步骤
     steps:
-      # 第一步：检出你的代码
+      # 第一步：检出（下载）你的代码到虚拟环境中
+      # 使用 actions/checkout@v4 是目前的最新稳定版
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 获取所有历史记录，以便 lfs 工作
+          # fetch-depth: 0 拉取所有 git 历史，对于 LFS 是必需的
+          fetch-depth: 0
+          # lfs: true 明确告诉 action 要处理 Git LFS 文件
+          lfs: true
 
-      # 可选步骤：设置 Python 环境并安装依赖
-      # 如果你的 Space 需要特定版本的 Python 或有依赖项，这一步很有用
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.10' # 根据你的需要修改版本
-      # - name: Install dependencies
-      #   run: pip install -r requirements.txt
-
-      # 可选步骤：运行测试
-      # 在部署前确保代码质量
-      # - name: Run tests
-      #   run: pytest
-
-      # 核心步骤：将代码推送到 Hugging Face Space
+      # 第二步：使用 Git Push 命令将代码推送到 Hugging Face Hub
       - name: Push to Hugging Face Hub
-        uses: huggingface/hub-action@v1 # 使用官方的 action
-        with:
-          # 你的 Hugging Face 用户名/组织名
-          repo_owner: enty411
-          # 你的 Hugging Face Space 仓库名
-          repo_name: nikke-union-management
-          # 目标仓库类型，对于 Space 来说是 "space"
-          repo_type: space
-          # 使用我们之前设置的 secret
-          hf_token: ${{ secrets.HF_TOKEN }}
-          # 设定 Space 的 SDK (e.g., streamlit, gradio, docker)
-          # 如果你的 Space 是 Docker 类型的，就不需要这个
-          # space_sdk: streamlit # 或者 gradio
+        # 设置环境变量，将 GitHub Secret 安全地注入
+        env:
+          # HF_TOKEN 这个名字可以任意取，但要与下面的 $HF_TOKEN 对应
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        # 运行的核心命令
+        # 我们在这里构建了一个包含认证信息的 git URL
+        # 格式: https://<你的用户名>:<你的Token>@huggingface.co/spaces/<你的用户名>/<你的空间名>
+        run: git push https://enty411:$HF_TOKEN@huggingface.co/spaces/enty411/nikke-union-management main
