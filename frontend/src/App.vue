@@ -7,25 +7,41 @@
     <main>
       <div class="upload-section">
         <h2>上传 JSON 文件</h2>
-        <input type="file" @change="handleFileUpload" accept=".json" multiple />
-        <button @click="submitFile" :disabled="filesToUpload.length === 0">上传</button>
+        <div class="upload-controls">
+          <select v-model="selectedUnionId">
+            <option :value="null">选择一个联盟</option>
+            <option v-for="union in unions" :key="union.id" :value="union.id">{{ union.name }}</option>
+          </select>
+          <input type="file" @change="handleFileUpload" accept=".json" multiple />
+          <button @click="submitFile" :disabled="filesToUpload.length === 0 || selectedUnionId === null">上传</button>
+        </div>
         <button @click="clearAllData" class="delete-btn">清空所有数据</button>
         <p v-if="uploadStatus">{{ uploadStatus }}</p>
       </div>
 
       <div class="tabs">
         <button @click="activeTab = 'settings'" :class="{ active: activeTab === 'settings' }">设置</button>
+        <button @click="activeTab = 'unions'" :class="{ active: activeTab === 'unions' }">联盟管理</button>
         <button @click="activeTab = 'players'" :class="{ active: activeTab === 'players' }">玩家管理</button>
         <button @click="activeTab = 'characters'" :class="{ active: activeTab === 'characters' }">角色总表</button>
         <button @click="activeTab = 'fire'" :class="{ active: activeTab === 'fire' }">燃烧</button>
+        <button @click="activeTab = 'water'" :class="{ active: activeTab === 'water' }">水冷</button>
+        <button @click="activeTab = 'electronic'" :class="{ active: activeTab === 'electronic' }">电击</button>
+        <button @click="activeTab = 'iron'" :class="{ active: activeTab === 'iron' }">铁甲</button>
+        <button @click="activeTab = 'wind'" :class="{ active: activeTab === 'wind' }">风压</button>
       </div>
 
       <div v-if="activeTab === 'characters'">
         <CharacterList :key="characterListKey" />
       </div>
+      <UnionManagement v-if="activeTab === 'unions'" @unions-updated="fetchUnions" />
       <PlayerManagement v-if="activeTab === 'players'" />
       <Settings v-if="activeTab === 'settings'" />
       <Fire v-if="activeTab === 'fire'" />
+      <Water v-if="activeTab === 'water'" />
+      <Electronic v-if="activeTab === 'electronic'" />
+      <Iron v-if="activeTab === 'iron'" />
+      <Wind v-if="activeTab === 'wind'" />
 
       <!-- Modal has been moved to CharacterList.vue -->
     </main>
@@ -33,17 +49,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import PlayerManagement from './components/PlayerManagement.vue';
 import CharacterList from './components/CharacterList.vue';
 import Settings from './components/Settings.vue';
 import Fire from './components/Fire.vue';
+import Water from './components/water.vue';
+import Electronic from './components/Electronic.vue';
+import Iron from './components/iron.vue';
+import Wind from './components/wind.vue';
+import UnionManagement from './components/UnionManagement.vue';
 
 const filesToUpload = ref([]);
 const uploadStatus = ref('');
-const activeTab = ref('fire'); // 'characters' or 'players' or 'fire'
+const activeTab = ref('unions'); // 'characters' or 'players' or 'fire' or 'water' or 'electronic' or 'unions' or 'iron' or 'wind'
 const characterListKey = ref(0);
+const unions = ref([]);
+const selectedUnionId = ref(null);
 
 const handleFileUpload = (event) => {
   filesToUpload.value = Array.from(event.target.files);
@@ -55,6 +78,9 @@ const submitFile = async () => {
   filesToUpload.value.forEach(file => {
     formData.append('files', file);
   });
+  if (selectedUnionId.value) {
+    formData.append('union_id', selectedUnionId.value);
+  }
 
   try {
     const response = await axios.post('/api/upload/', formData, {
@@ -82,6 +108,17 @@ const clearAllData = async () => {
     }
   }
 };
+
+const fetchUnions = async () => {
+  try {
+    const response = await axios.get('/api/unions/');
+    unions.value = response.data;
+  } catch (error) {
+    console.error('获取联盟列表失败:', error);
+  }
+};
+
+onMounted(fetchUnions);
 </script>
 
 <style>
@@ -109,6 +146,12 @@ main {
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.upload-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .tabs {

@@ -1,6 +1,6 @@
 # Trigger reload
 import json
-from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query, Form
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -66,7 +66,7 @@ def get_filter_options():
     }
 
 @app.post("/upload/")
-async def upload_file(files: List[UploadFile] = File(...), db: Session = Depends(get_db)):
+async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[int] = Form(None), db: Session = Depends(get_db)):
     successful_files = 0
     failed_files = 0
 
@@ -103,7 +103,8 @@ async def upload_file(files: List[UploadFile] = File(...), db: Session = Depends
                     name=player_name,
                     synchro_level=data.get("synchroLevel"),
                     resilience_cube_level=resilience_cube_level,
-                    bastion_cube_level=bastion_cube_level
+                    bastion_cube_level=bastion_cube_level,
+                    union_id=union_id
                 )
                 db.add(player)
                 db.commit()
@@ -113,6 +114,7 @@ async def upload_file(files: List[UploadFile] = File(...), db: Session = Depends
                 player.synchro_level = data.get("synchroLevel")
                 player.resilience_cube_level = resilience_cube_level
                 player.bastion_cube_level = bastion_cube_level
+                player.union_id = union_id
                 db.commit()
                 # Delete old character data for this player to re-sync
                 db.query(models.Character).filter(models.Character.player_id == player.id).delete()
@@ -271,6 +273,7 @@ async def upload_file(files: List[UploadFile] = File(...), db: Session = Depends
 @app.get("/characters/", response_model=List[dict])
 def get_characters(
     player_name: Optional[str] = Query(None),
+    union_ids: Optional[str] = Query(None), # Changed from union_id to union_ids
     character_name: Optional[str] = Query(None),
     class_: Optional[str] = Query(None, alias="class"),
     element: Optional[str] = Query(None),
@@ -282,6 +285,13 @@ def get_characters(
 ):
     query = db.query(models.Character).join(models.Player)
     
+    if union_ids:
+        try:
+            union_id_list = [int(uid.strip()) for uid in union_ids.split(',') if uid.strip()]
+            if union_id_list:
+                query = query.filter(models.Player.union_id.in_(union_id_list))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid union_ids format. Must be comma-separated integers.")
     if player_name:
         player_names = [name.strip() for name in player_name.split(',') if name.strip()]
         if player_names:
@@ -318,6 +328,8 @@ def get_characters(
         result.append({
             "id": char.id,
             "player_name": char.player.name,
+            "union_id": char.player.union_id,
+            "union_name": char.player.union.name if char.player.union else None,
             "character_id": char.character_id,
             "name_cn": char.name_cn,
             "element": char.element,
@@ -453,11 +465,19 @@ def clear_all_data(db: Session = Depends(get_db)):
 
 @app.get("/players/", response_model=List[dict])
 def get_players(
+    union_ids: Optional[str] = Query(None), # Changed from union_id to union_ids
     sort_by: Optional[str] = Query("name"),
     order: Optional[str] = Query("asc"),
     db: Session = Depends(get_db)
 ):
     query = db.query(models.Player)
+    if union_ids:
+        try:
+            union_id_list = [int(uid.strip()) for uid in union_ids.split(',') if uid.strip()]
+            if union_id_list:
+                query = query.filter(models.Player.union_id.in_(union_id_list))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid union_ids format. Must be comma-separated integers.")
 
     sort_column = getattr(models.Player, sort_by, None)
     if sort_column is None:
@@ -477,6 +497,46 @@ def get_players(
             "synchro_level": player.synchro_level,
             "resilience_cube_level": player.resilience_cube_level,
             "bastion_cube_level": player.bastion_cube_level,
+            "union_id": player.union_id,
+            "union_name": player.union.name if player.union else None,
         }
         for player in players
     ]
+
+# Union CRUD
+@app.post("/unions/", response_model=dict)
+def create_union(name: str, db: Session = Depends(get_db)):
+    db_union = models.Union(name=name)
+    db.add(db_union)
+    db.commit()
+    db.refresh(db_union)
+    return {"id": db_union.id, "name": db_union.name}
+
+@app.get("/unions/", response_model=List[dict])
+def get_unions(db: Session = Depends(get_db)):
+    unions = db.query(models.Union).all()
+    return [{"id": u.id, "name": u.name} for u in unions]
+
+@app.put("/unions/{union_id}", response_model=dict)
+def update_union(union_id: int, name: str, db: Session = Depends(get_db)):
+    db_union = db.query(models.Union).filter(models.Union.id == union_id).first()
+    if not db_union:
+        raise HTTPException(status_code=404, detail="Union not found")
+    db_union.name = name
+    db.commit()
+    db.refresh(db_union)
+    return {"id": db_union.id, "name": db_union.name}
+
+@app.delete("/unions/{union_id}", response_model=dict)
+def delete_union(union_id: int, db: Session = Depends(get_db)):
+    db_union = db.query(models.Union).filter(models.Union.id == union_id).first()
+    if not db_union:
+        raise HTTPException(status_code=404, detail="Union not found")
+    
+    # Optional: Check if any players are in this union before deleting
+    if db_union.players:
+        raise HTTPException(status_code=400, detail="Cannot delete union with players in it")
+
+    db.delete(db_union)
+    db.commit()
+    return {"status": "success"}

@@ -1,10 +1,23 @@
 <template>
   <div class="player-management-section">
     <h2>玩家管理</h2>
+    <div class="filters">
+      <h4>按联盟筛选</h4>
+      <div v-for="union in unions" :key="union.id" class="filter-item">
+        <input
+          type="checkbox"
+          :id="'union-pm-' + union.id"
+          :value="union.id"
+          v-model="selectedUnionIds"
+        />
+        <label :for="'union-pm-' + union.id">{{ union.name }}</label>
+      </div>
+    </div>
     <table>
       <thead>
         <tr>
           <th @click="sortBy('name')">玩家名</th>
+          <th @click="sortBy('union_name')">联盟</th>
           <th @click="sortBy('synchro_level')">同步器等级</th>
           <th @click="sortBy('resilience_cube_level')">遗迹巨熊魔方</th>
           <th @click="sortBy('bastion_cube_level')">战术巨熊魔方</th>
@@ -14,6 +27,7 @@
       <tbody>
         <tr v-for="player in players" :key="player.id">
           <td>{{ player.name }}</td>
+          <td>{{ player.union_name }}</td>
           <td>{{ player.synchro_level }}</td>
           <td>{{ player.resilience_cube_level }}</td>
           <td>{{ player.bastion_cube_level }}</td>
@@ -27,21 +41,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 const players = ref([]);
+const unions = ref([]);
+const selectedUnionIds = ref([]);
 const sortKey = ref('name');
 const sortOrder = ref('asc');
 
 const fetchPlayers = async () => {
   try {
-    const response = await axios.get('/api/players/', {
-      params: {
-        sort_by: sortKey.value,
-        order: sortOrder.value,
-      },
-    });
+    const params = {
+      sort_by: sortKey.value,
+      order: sortOrder.value,
+    };
+    if (selectedUnionIds.value.length > 0) {
+      params.union_ids = selectedUnionIds.value.join(',');
+    }
+    const response = await axios.get('/api/players/', { params });
     players.value = response.data;
   } catch (error) {
     console.error('获取玩家列表失败:', error);
@@ -71,7 +89,21 @@ const deletePlayer = async (playerName) => {
   }
 };
 
+const fetchUnions = async () => {
+  try {
+    const response = await axios.get('/api/unions/');
+    unions.value = response.data;
+  } catch (error) {
+    console.error('获取联盟列表失败:', error);
+  }
+};
+
+watch(selectedUnionIds, () => {
+  fetchPlayers();
+});
+
 onMounted(() => {
+  fetchUnions();
   fetchPlayers();
 });
 </script>
@@ -83,6 +115,17 @@ onMounted(() => {
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.filter-item {
+  display: inline-block;
+  margin-right: 15px;
 }
 
 table {

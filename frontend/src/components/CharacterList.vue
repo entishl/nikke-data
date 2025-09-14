@@ -3,7 +3,18 @@
     <h2>角色总表</h2>
     <div class="main-layout">
       <div class="sidebar">
-        <h4>按玩家筛选</h4>
+        <h4>按联盟筛选</h4>
+        <div v-for="union in unions" :key="union.id" class="player-filter-item">
+          <input
+            type="checkbox"
+            :id="'union-' + union.id"
+            :value="union.id"
+            v-model="selectedUnionIds"
+          />
+          <label :for="'union-' + union.id">{{ union.name }}</label>
+        </div>
+
+        <h4 style="margin-top: 20px;">按玩家筛选</h4>
         <div class="sidebar-actions">
           <button @click="selectAllPlayers">全选</button>
           <button @click="clearSelection">清空</button>
@@ -101,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import CharacterDetailsModal from './CharacterDetailsModal.vue';
 import { formatGradeAndCore, formatItem, formatKilo } from '../utils.js';
@@ -112,6 +123,8 @@ const characters = computed(() => filteredAndSortedCharacters.value); // This wi
 const characterNameFilter = ref('');
 const players = ref([]);
 const selectedPlayers = ref([]);
+const unions = ref([]);
+const selectedUnionIds = ref([]); // Changed from selectedUnionId
 
 // Filter refs
 const classFilter = ref('');
@@ -135,8 +148,11 @@ const characterToShowInModal = ref(null);
 
 const fetchCharacters = async () => {
   try {
-    // Fetch all characters without any filtering or sorting parameters
-    const response = await axios.get('/api/characters/');
+    const params = {};
+    if (selectedUnionIds.value.length > 0) {
+      params.union_ids = selectedUnionIds.value.join(',');
+    }
+    const response = await axios.get('/api/characters/', { params });
     allCharacters.value = response.data;
   } catch (error) {
     console.error('获取角色列表失败:', error);
@@ -232,17 +248,39 @@ const resetFilters = () => {
 
 const fetchPlayers = async () => {
   try {
-    const response = await axios.get('/api/players/', {
-      params: {
-        sort_by: 'synchro_level',
-        order: 'desc',
-      },
-    });
+    const params = {
+      sort_by: 'synchro_level',
+      order: 'desc',
+    };
+    if (selectedUnionIds.value.length > 0) {
+      params.union_ids = selectedUnionIds.value.join(',');
+    }
+    const response = await axios.get('/api/players/', { params });
     players.value = response.data;
   } catch (error) {
     console.error('获取玩家列表失败:', error);
   }
 };
+
+const fetchUnions = async () => {
+  try {
+    const response = await axios.get('/api/unions/');
+    unions.value = response.data;
+  } catch (error) {
+    console.error('获取联盟列表失败:', error);
+  }
+};
+
+watch(selectedUnionIds, () => {
+  fetchPlayers();
+  fetchCharacters();
+  selectedPlayers.value = []; // Clear player selection when union changes
+});
+
+watch(selectedPlayers, () => {
+  // This watcher is now less critical since filtering is client-side,
+  // but can be kept for immediate reactivity if needed, or removed.
+});
 
 const selectAllPlayers = () => {
   selectedPlayers.value = players.value.map(p => p.name);
@@ -256,8 +294,9 @@ const clearSelection = () => {
 
 onMounted(() => {
   fetchFilterOptions();
+  fetchUnions();
   fetchPlayers();
-  fetchCharacters(); // Fetch all data once
+  fetchCharacters();
 });
 
 const deletePlayer = async (playerName) => {

@@ -1,6 +1,6 @@
 <template>
-  <div class="fire-container">
-    <h2>燃烧 - 角色练度总览</h2>
+  <div class="iron-container">
+    <h2>铁甲 - 角色练度总览</h2>
 
     <div class="controls">
       <div class="control-group">
@@ -21,11 +21,11 @@
           <div v-for="union in unions" :key="union.id" class="filter-item">
             <input
               type="checkbox"
-              :id="'union-fire-' + union.id"
+              :id="'union-iron-' + union.id"
               :value="union.id"
               v-model="selectedUnionIds"
             />
-            <label :for="'union-fire-' + union.id">{{ union.name }}</label>
+            <label :for="'union-iron-' + union.id">{{ union.name }}</label>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
         <thead>
           <tr v-if="!showDetails">
             <th>玩家</th>
-            <th v-for="char in fireCharacterHeaders" :key="char.id" @click="handleSort(String(char.id))" class="sortable">
+            <th v-for="char in ironCharacterHeaders" :key="char.id" @click="handleSort(String(char.id))" class="sortable">
               {{ char.name_cn }}
               <span v-if="sortKey === String(char.id)">{{ sortDirection === 'desc' ? '▼' : '▲' }}</span>
             </th>
@@ -47,12 +47,12 @@
           <template v-else>
             <tr>
               <th rowspan="2" class="player-header">玩家</th>
-              <th v-for="char in fireCharacterHeaders" :key="char.id" :colspan="detailAttributes.length" class="character-header">
+              <th v-for="char in ironCharacterHeaders" :key="char.id" :colspan="detailAttributes.length" class="character-header">
                 {{ char.name_cn }}
               </th>
             </tr>
             <tr>
-              <template v-for="char in fireCharacterHeaders" :key="char.id + '-details'">
+              <template v-for="char in ironCharacterHeaders" :key="char.id + '-details'">
                 <th v-for="attr in detailAttributes" :key="attr.key" class="detail-header sortable" @click="handleSort(`${char.id}:${attr.raw_key || attr.key}`)">
                   {{ attr.label }}
                   <span v-if="sortKey === `${char.id}:${attr.raw_key || attr.key}`">{{ sortDirection === 'desc' ? '▼' : '▲' }}</span>
@@ -65,12 +65,12 @@
           <tr v-for="player in sortedPlayers" :key="player.id">
             <td>{{ player.name }}</td>
             <template v-if="!showDetails">
-              <td v-for="headerChar in fireCharacterHeaders" :key="headerChar.id">
+              <td v-for="headerChar in ironCharacterHeaders" :key="headerChar.id">
                 {{ getFormattedDegree(player.name, headerChar.id) }}
               </td>
             </template>
             <template v-else>
-              <template v-for="headerChar in fireCharacterHeaders" :key="headerChar.id + '-details-body'">
+              <template v-for="headerChar in ironCharacterHeaders" :key="headerChar.id + '-details-body'">
                 <template v-if="getCharacterDetails(player.name, headerChar.id)">
                   <td v-for="attr in detailAttributes" :key="attr.key">
                     {{ getCharacterDetails(player.name, headerChar.id)[attr.key] }}
@@ -137,7 +137,7 @@ const fetchData = async () => {
     const [playersRes, uniqueCharsRes, charDataRes] = await Promise.all([
       axios.get('/api/players/', { params }),
       axios.get('/api/characters/all-unique'), // This does not need filtering
-      axios.get('/api/characters/', { params: { ...params, element: 'Fire' } })
+      axios.get('/api/characters/', { params: { ...params, element: 'Iron' } })
     ]);
     players.value = playersRes.data;
     uniqueCharacters.value = uniqueCharsRes.data;
@@ -180,11 +180,11 @@ const characterDataMap = computed(() => {
   return map;
 });
 
-// Filter unique characters to get only fire characters that are also marked as is_C
-const fireCharacterHeaders = computed(() => {
-  const fireCharsFromData = new Set(characterData.value.filter(c => c.is_C).map(c => c.character_id));
+// Filter unique characters to get only iron characters that are also marked as is_C
+const ironCharacterHeaders = computed(() => {
+  const ironCharsFromData = new Set(characterData.value.filter(c => c.is_C).map(c => c.character_id));
   return uniqueCharacters.value.filter(char =>
-    char.element === 'Fire' && fireCharsFromData.has(char.id)
+    char.element === 'Iron' && ironCharsFromData.has(char.id)
   ).sort((a, b) => a.id - b.id);
 });
 
@@ -279,7 +279,7 @@ const sortedPlayers = computed(() => {
 </script>
 
 <style scoped>
-.fire-container {
+.iron-container {
   padding: 20px;
   background: #f9f9f9;
   border-radius: 8px;

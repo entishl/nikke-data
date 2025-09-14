@@ -9,6 +9,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class Base(DeclarativeBase):
     pass
 
+class Union(Base):
+    __tablename__ = "unions"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    players = relationship("Player", back_populates="union")
+
 class Player(Base):
     __tablename__ = "players"
     id = Column(Integer, primary_key=True, index=True)
@@ -16,6 +22,8 @@ class Player(Base):
     synchro_level = Column(Integer)
     resilience_cube_level = Column(Integer, default=0)
     bastion_cube_level = Column(Integer, default=0)
+    union_id = Column(Integer, ForeignKey("unions.id"))
+    union = relationship("Union", back_populates="players")
     characters = relationship("Character", back_populates="player", cascade="all, delete-orphan")
 
 class Character(Base):
