@@ -1,0 +1,7 @@
+# SQLite Database
+*.db
+*.db-journal
+
+# Python cache
+__pycache__/
+*.pyc

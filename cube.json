@@ -1,0 +1,77 @@
+[
+  {
+    "cube_level": 1,
+    "atk": 390,
+    "IncElementDmg": 0
+  },
+  {
+    "cube_level": 2,
+    "atk": 450,
+    "IncElementDmg": 0
+  },
+  {
+    "cube_level": 3,
+    "atk": 520,
+    "IncElementDmg": 0
+  },
+  {
+    "cube_level": 4,
+    "atk": 600,
+    "IncElementDmg": 0
+  },
+  {
+    "cube_level": 5,
+    "atk": 690,
+    "IncElementDmg": 8.48
+  },
+  {
+    "cube_level": 6,
+    "atk": 790,
+    "IncElementDmg": 8.48
+  },
+  {
+    "cube_level": 7,
+    "atk": 910,
+    "IncElementDmg": 8.48
+  },
+  {
+    "cube_level": 8,
+    "atk": 1050,
+    "IncElementDmg": 8.48
+  },
+  {
+    "cube_level": 9,
+    "atk": 1200,
+    "IncElementDmg": 10.6
+  },
+  {
+    "cube_level": 10,
+    "atk": 1380,
+    "IncElementDmg": 12.72
+  },
+  {
+    "cube_level": 11,
+    "atk": 1590,
+    "IncElementDmg": 14.84
+  },
+  {
+    "cube_level": 12,
+    "atk": 1830,
+    "IncElementDmg": 14.84
+  },
+  {
+    "cube_level": 13,
+    "atk": 2100,
+    "IncElementDmg": 16.96
+  },
+  {
+    "cube_level": 14,
+    "atk": 2420,
+    "IncElementDmg": 16.96
+  },
+  {
+    "cube_level": 15,
+    "atk": 2780,
+    "IncElementDmg": 19.09
+  }
+]
