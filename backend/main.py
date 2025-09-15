@@ -491,7 +491,7 @@ def get_players(
 
 # Union CRUD
 @app.post("/api/unions/", response_model=dict)
-def create_union(name: str, db: Session = Depends(get_db)):
+def create_union(name: str = Query(...), db: Session = Depends(get_db)):
     db_union = models.Union(name=name)
     db.add(db_union)
     db.commit()
@@ -528,3 +528,4 @@ def delete_union(union_id: int, db: Session = Depends(get_db)):
     return {"status": "success"}
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
