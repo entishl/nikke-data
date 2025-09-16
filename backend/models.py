@@ -38,6 +38,7 @@ class Character(Base):
     character_id = Column(Integer, index=True)
     name_cn = Column(String, index=True)
     element = Column(String)
+    element_from_user = Column(String)
     skill1_level = Column(Integer)
     skill2_level = Column(Integer)
     skill_burst_level = Column(Integer)

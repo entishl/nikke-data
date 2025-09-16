@@ -27,7 +27,7 @@ const emit = defineEmits(['settings-updated']);
 const groupedCharacters = computed(() => {
   const groups = {};
   for (const char of characters.value) {
-    const element = char.element || '未知';
+    const element = char.element_from_user || '未知';
     if (!groups[element]) {
       groups[element] = [];
     }
@@ -48,7 +48,11 @@ onMounted(async () => {
 
     const initialSettings = {};
     for (const char of characters.value) {
-      initialSettings[char.id] = settings[char.id] !== undefined ? settings[char.id] : true;
+      if (char.element_from_user === 'Utility') {
+        initialSettings[char.id] = settings[char.id] !== undefined ? settings[char.id] : false;
+      } else {
+        initialSettings[char.id] = settings[char.id] !== undefined ? settings[char.id] : true;
+      }
     }
     isCSettings.value = initialSettings;
 

@@ -1,27 +1,31 @@
 # Trigger reload
 import json
+from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query, Form
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
-import models
-from models import SessionLocal, engine
+from . import models
+from .models import SessionLocal, engine
 
 models.create_db_and_tables()
 
 app = FastAPI()
 
+# Get the directory of the current script
+current_dir = Path(__file__).parent
+
 # Load nikke list for static data
-with open('list.json', 'r', encoding='utf-8') as f:
+with open(current_dir / 'list.json', 'r', encoding='utf-8') as f:
     nikke_list_data = json.load(f)
 nikke_static_data = {nikke['id']: nikke for nikke in nikke_list_data['nikkes']}
 
-with open('cube.json', 'r', encoding='utf-8') as f:
+with open(current_dir / 'cube.json', 'r', encoding='utf-8') as f:
     cube_data = json.load(f)
 cube_level_map = {item['cube_level']: item for item in cube_data}
 
-with open('number.json', 'r', encoding='utf-8') as f:
+with open(current_dir / 'number.json', 'r', encoding='utf-8') as f:
     number_data = json.load(f)
 
 
@@ -56,10 +60,38 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
     successful_files = 0
     failed_files = 0
 
+    # Step 1: Pre-process to gather all character IDs
+    all_character_ids = set()
+    file_contents = {}
+    for file in files:
+        contents = await file.read()
+        try:
+            data = json.loads(contents)
+            file_contents[file.filename] = data  # Store data for later use
+            for element, characters_in_element in data.get("elements", {}).items():
+                for char_data in characters_in_element:
+                    if "id" in char_data:
+                        all_character_ids.add(char_data["id"])
+                        # Special handling for Rapi: Red Hood's virtual character
+                        if char_data["id"] == 201601:
+                            all_character_ids.add(201602)
+        except json.JSONDecodeError:
+            # Handle JSON decoding errors if necessary, maybe log them
+            continue
+
+    # Step 2: Batch query for CharacterSettings
+    is_c_settings = {}
+    if all_character_ids:
+        settings = db.query(models.CharacterSetting).filter(models.CharacterSetting.character_id.in_(all_character_ids)).all()
+        is_c_settings = {setting.character_id: setting.is_C for setting in settings}
+
     for file in files:
         try:
-            contents = await file.read()
-            data = json.loads(contents)
+            data = file_contents.get(file.filename)
+            if not data:
+                # This file might have had a JSON error or was empty
+                failed_files += 1
+                continue
 
             player_name = data.get("name")
             if not player_name:
@@ -163,7 +195,8 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
                         player_id=player.id,
                         character_id=character_id,
                         name_cn=char_data.get("name_cn"),
-                        element=element,
+                        element=static_data.get("element"),
+                        element_from_user=element,
                         skill1_level=char_data.get("skill1_level"),
                         skill2_level=char_data.get("skill2_level"),
                         skill_burst_level=char_data.get("skill_burst_level"),
@@ -184,7 +217,7 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
                         weapon_type=static_data.get("weapon_type"),
                         original_rare=static_data.get("original_rare"),
                         use_burst_skill=static_data.get("use_burst_skill"),
-                        is_C=db.query(models.CharacterSetting).filter_by(character_id=character_id).first().is_C if db.query(models.CharacterSetting).filter_by(character_id=character_id).first() else True
+                        is_C=is_c_settings.get(character_id, False) if element == 'Utility' else is_c_settings.get(character_id, True)
                     )
                     db.add(new_char)
                     db.commit()
@@ -211,6 +244,7 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
                                 character_id=virtual_char_id,
                                 name_cn=virtual_static_data.get("name_cn"),
                                 element=virtual_static_data.get("element"),
+                                element_from_user="Iron",
                                 skill1_level=char_data.get("skill1_level"),
                                 skill2_level=char_data.get("skill2_level"),
                                 skill_burst_level=char_data.get("skill_burst_level"),
@@ -231,7 +265,7 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
                                 weapon_type=virtual_static_data.get("weapon_type"),
                                 original_rare=virtual_static_data.get("original_rare"),
                                 use_burst_skill=virtual_static_data.get("use_burst_skill"),
-                                is_C=db.query(models.CharacterSetting).filter_by(character_id=virtual_char_id).first().is_C if db.query(models.CharacterSetting).filter_by(character_id=virtual_char_id).first() else True
+                                is_C=is_c_settings.get(virtual_char_id, True)
                             )
                             db.add(virtual_char)
                             db.commit()
@@ -250,9 +284,11 @@ async def upload_file(files: List[UploadFile] = File(...), union_id: Optional[in
            
             db.commit()
             successful_files += 1
-        except Exception:
+        except Exception as e:
             db.rollback()
             failed_files += 1
+            # It's good practice to log the exception
+            print(f"Failed to process file {file.filename}: {e}")
     
     return {"successful_files": successful_files, "failed_files": failed_files}
 
@@ -269,7 +305,7 @@ def get_characters(
     order: Optional[str] = Query("desc"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Character).join(models.Player)
+    query = db.query(models.Character).options(joinedload(models.Character.player).joinedload(models.Player.union))
     
     if union_ids:
         try:
@@ -319,6 +355,7 @@ def get_characters(
             "character_id": char.character_id,
             "name_cn": char.name_cn,
             "element": char.element,
+            "element_from_user": char.element_from_user,
             "skill1_level": char.skill1_level,
             "skill2_level": char.skill2_level,
             "skill_burst_level": char.skill_burst_level,
@@ -346,12 +383,12 @@ def get_characters(
 @app.get("/api/characters/all-unique")
 def get_all_unique_characters(db: Session = Depends(get_db)):
     # Query for distinct character_id, name_cn, and element from the Character table
-    query = db.query(models.Character.character_id, models.Character.name_cn, models.Character.element).distinct()
+    query = db.query(models.Character.character_id, models.Character.name_cn, models.Character.element, models.Character.element_from_user).distinct()
     
     # Execute the query and format the results
     unique_characters = [
-        {"id": char_id, "name_cn": name_cn, "element": element}
-        for char_id, name_cn, element in query.all()
+        {"id": char_id, "name_cn": name_cn, "element": element, "element_from_user": element_from_user}
+        for char_id, name_cn, element, element_from_user in query.all()
     ]
     
     # Sort the results by character ID
@@ -406,6 +443,7 @@ def get_character_details(character_db_id: int, db: Session = Depends(get_db)):
         "character_id": char.character_id,
         "name_cn": char.name_cn,
         "element": char.element,
+        "element_from_user": char.element_from_user,
         "skill1_level": char.skill1_level,
         "skill2_level": char.skill2_level,
         "skill_burst_level": char.skill_burst_level,
@@ -589,5 +627,5 @@ def delete_union(union_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "success"}
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/", StaticFiles(directory=current_dir / "static", html=True), name="static")
 
