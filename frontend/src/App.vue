@@ -1,7 +1,7 @@
 <template>
   <div id="app-container">
     <header>
-      <h1>Nikke 角色练度管理器</h1>
+      <h1>Nikke 联盟练度管理</h1>
     </header>
 
     <main>
