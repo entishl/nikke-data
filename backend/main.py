@@ -365,12 +365,19 @@ def get_is_c_settings(db: Session = Depends(get_db)):
 @app.post("/api/settings/is-c")
 def update_is_c_settings(settings: dict[int, bool], db: Session = Depends(get_db)):
     for char_id, is_c in settings.items():
+        # First, update the setting in the CharacterSetting table for future uploads
         setting = db.query(models.CharacterSetting).filter_by(character_id=char_id).first()
         if setting:
             setting.is_C = is_c
         else:
             setting = models.CharacterSetting(character_id=char_id, is_C=is_c)
             db.add(setting)
+        
+        # Second, update the is_C status for all existing characters in the Character table
+        db.query(models.Character).filter(
+            models.Character.character_id == char_id
+        ).update({"is_C": is_c})
+
     db.commit()
     return {"status": "success"}
 
@@ -488,6 +495,61 @@ def get_players(
         }
         for player in players
     ]
+
+@app.post("/api/element-training-analysis/")
+def get_element_training_analysis(
+    union_ids: Optional[str] = Form(None),
+    character_coefficients: str = Form(...),
+    training_type: str = Form("relative_training_degree"),
+    db: Session = Depends(get_db)
+):
+    try:
+        coeffs = json.loads(character_coefficients)
+        character_ids = [int(k) for k in coeffs.keys()]
+    except (json.JSONDecodeError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid character_coefficients format.")
+
+    if not character_ids:
+        return []
+
+    # 1. Get players
+    player_query = db.query(models.Player)
+    if union_ids:
+        try:
+            union_id_list = [int(uid.strip()) for uid in union_ids.split(',') if uid.strip()]
+            if union_id_list:
+                player_query = player_query.filter(models.Player.union_id.in_(union_id_list))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid union_ids format.")
+    
+    players = player_query.all()
+    if not players:
+        return []
+
+    player_ids = [p.id for p in players]
+
+    # 2. Get relevant characters for these players
+    characters = db.query(models.Character).filter(
+        models.Character.player_id.in_(player_ids),
+        models.Character.character_id.in_(character_ids)
+    ).all()
+
+    # 3. Initialize results map
+    analysis_results = {
+        p.name: {"player_name": p.name, "elements": {"Fire": 0, "Water": 0, "Wind": 0, "Electronic": 0, "Iron": 0}}
+        for p in players
+    }
+
+    # 4. Process characters
+    for char in characters:
+        coefficient = coeffs.get(str(char.character_id))
+        if coefficient is not None:
+            training_value = getattr(char, training_type, 0)
+            player_name = char.player.name
+            if player_name in analysis_results:
+                analysis_results[player_name]["elements"][char.element] += training_value * float(coefficient)
+
+    return list(analysis_results.values())
 
 # Union CRUD
 @app.post("/api/unions/", response_model=dict)

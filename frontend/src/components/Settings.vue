@@ -17,11 +17,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, defineEmits } from 'vue';
 import axios from 'axios';
 
 const characters = ref([]);
 const isCSettings = ref({});
+const emit = defineEmits(['settings-updated']);
 
 const groupedCharacters = computed(() => {
   const groups = {};
@@ -60,6 +61,7 @@ const saveSettings = async () => {
   try {
     await axios.post('/api/settings/is-c', isCSettings.value);
     alert('设置已保存！');
+    emit('settings-updated');
   } catch (error) {
     console.error('Error saving settings:', error);
     alert('保存设置失败。');

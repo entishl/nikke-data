@@ -29,6 +29,7 @@
         <button @click="activeTab = 'electronic'" class="tab-electronic" :class="{ active: activeTab === 'electronic' }">电击</button>
         <button @click="activeTab = 'iron'" class="tab-iron" :class="{ active: activeTab === 'iron' }">铁甲</button>
         <button @click="activeTab = 'wind'" class="tab-wind" :class="{ active: activeTab === 'wind' }">风压</button>
+        <button @click="activeTab = 'element-training'" :class="{ active: activeTab === 'element-training' }">元素练度分析</button>
       </div>
 
       <div v-if="activeTab === 'characters'">
@@ -36,12 +37,13 @@
       </div>
       <UnionManagement v-if="activeTab === 'unions'" @unions-updated="fetchUnions" />
       <PlayerManagement v-if="activeTab === 'players'" />
-      <Settings v-if="activeTab === 'settings'" />
+      <Settings v-if="activeTab === 'settings'" @settings-updated="refreshElementTraining" />
       <Fire v-if="activeTab === 'fire'" />
       <Water v-if="activeTab === 'water'" />
       <Electronic v-if="activeTab === 'electronic'" />
       <Iron v-if="activeTab === 'iron'" />
       <Wind v-if="activeTab === 'wind'" />
+      <ElementTrainingAnalysis v-if="activeTab === 'element-training'" :key="elementTrainingKey" />
 
       <!-- Modal has been moved to CharacterList.vue -->
     </main>
@@ -60,13 +62,19 @@ import Electronic from './components/Electronic.vue';
 import Iron from './components/iron.vue';
 import Wind from './components/wind.vue';
 import UnionManagement from './components/UnionManagement.vue';
+import ElementTrainingAnalysis from './components/ElementTrainingAnalysis.vue';
 
 const filesToUpload = ref([]);
 const uploadStatus = ref('');
 const activeTab = ref('unions'); // 'characters' or 'players' or 'fire' or 'water' or 'electronic' or 'unions' or 'iron' or 'wind'
 const characterListKey = ref(0);
+const elementTrainingKey = ref(0);
 const unions = ref([]);
 const selectedUnionId = ref(null);
+
+const refreshElementTraining = () => {
+  elementTrainingKey.value++;
+};
 
 const handleFileUpload = (event) => {
   filesToUpload.value = Array.from(event.target.files);
