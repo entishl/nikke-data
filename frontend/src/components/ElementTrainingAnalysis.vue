@@ -49,23 +49,23 @@
                 玩家
                 <span v-if="sortKey === 'player_name'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
-              <th @click="sortBy('Fire')" class="fire-header">
+              <th @click="sortBy('Fire')">
                 燃烧
                 <span v-if="sortKey === 'Fire'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
-              <th @click="sortBy('Water')" class="water-header">
+              <th @click="sortBy('Water')">
                 水冷
                 <span v-if="sortKey === 'Water'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
-              <th @click="sortBy('Wind')" class="wind-header">
+              <th @click="sortBy('Wind')">
                 风压
                 <span v-if="sortKey === 'Wind'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
-              <th @click="sortBy('Electronic')" class="electronic-header">
+              <th @click="sortBy('Electronic')">
                 电击
                 <span v-if="sortKey === 'Electronic'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
-              <th @click="sortBy('Iron')" class="iron-header">
+              <th @click="sortBy('Iron')">
                 铁甲
                 <span v-if="sortKey === 'Iron'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
@@ -334,19 +334,14 @@ th, td {
 }
 
 th {
-  background-color: #f2f2f2;
+  background-color: rgb(69, 60, 60);
+  color: white;
   cursor: pointer;
 }
 
 th span {
   float: right;
 }
-
-.fire-header { background-color: #f44336; color: white; }
-.water-header { background-color: #2196F3; color: white; }
-.wind-header { background-color: #4CAF50; color: white; }
-.electronic-header { background-color: #9C27B0; color: white; }
-.iron-header { background-color: #FFEB3B; color: black; }
 
 .fire-highlight { background-color: #f44336; color: white; }
 .water-highlight { background-color: #2196F3; color: white; }

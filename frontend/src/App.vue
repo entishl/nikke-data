@@ -30,7 +30,7 @@
         <button @click="activeTab = 'electronic'" class="tab-electronic" :class="{ active: activeTab === 'electronic' }">电击</button>
         <button @click="activeTab = 'iron'" class="tab-iron" :class="{ active: activeTab === 'iron' }">铁甲</button>
         <button @click="activeTab = 'wind'" class="tab-wind" :class="{ active: activeTab === 'wind' }">风压</button>
-        <button @click="activeTab = 'element-training'" :class="{ active: activeTab === 'element-training' }">元素练度分析</button>
+        <button @click="activeTab = 'element-training'" :class="{ active: activeTab === 'element-training' }">元素总览</button>
       </div>
 
       <div v-if="activeTab === 'characters'">
