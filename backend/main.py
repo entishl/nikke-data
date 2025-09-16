@@ -6,8 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
-import models
-from models import SessionLocal, engine
+from backend import models
+from backend.models import SessionLocal, engine
 
 models.create_db_and_tables()
 
@@ -629,5 +629,5 @@ def delete_union(union_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "success"}
 
-app.mount("/", StaticFiles(directory=current_dir / "static", html=True), name="static")
+app.mount("/", StaticFiles(directory=current_dir.parent / "static", html=True), name="static")
 

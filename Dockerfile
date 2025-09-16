@@ -16,11 +16,12 @@ COPY --from=frontend-builder /app/frontend/dist /app/static
 # Copy backend code and install dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY backend/ .
-RUN mkdir /data
+COPY backend/ ./backend/
+COPY app.py .
+RUN mkdir -p /data
 
 # Expose the port Hugging Face will use
 EXPOSE 7860
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
