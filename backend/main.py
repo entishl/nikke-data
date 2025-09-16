@@ -487,6 +487,8 @@ def clear_all_data(db: Session = Depends(get_db)):
         db.query(models.Equipment).delete()
         db.query(models.Character).delete()
         db.query(models.Player).delete()
+        db.query(models.Union).delete()
+        db.query(models.CharacterSetting).delete()
         db.commit()
         return {"status": "success", "message": "All data has been cleared."}
     except Exception as e:
