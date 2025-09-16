@@ -6,8 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
-from . import models
-from .models import SessionLocal, engine
+import models
+from models import SessionLocal, engine
 
 models.create_db_and_tables()
 
