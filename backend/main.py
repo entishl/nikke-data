@@ -1,5 +1,6 @@
 # Trigger reload
 import json
+import os
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query, Form
 from fastapi.staticfiles import StaticFiles
@@ -629,5 +630,7 @@ def delete_union(union_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "success"}
 
-app.mount("/", StaticFiles(directory=current_dir.parent / "static", html=True), name="static")
+# Mount static files only in production. In development, frontend is served by Vite.
+if os.getenv("APP_ENV") == "production":
+    app.mount("/", StaticFiles(directory="/app/static", html=True), name="static")
 

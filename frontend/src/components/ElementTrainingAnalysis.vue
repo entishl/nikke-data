@@ -13,9 +13,15 @@
 
       <!-- Training Type Switch -->
       <div class="control-group">
-        <label>练度类型:</label>
-        <button @click="trainingType = 'relative_training_degree'" :class="{ active: trainingType === 'relative_training_degree' }">相对练度</button>
-        <button @click="trainingType = 'absolute_training_degree'" :class="{ active: trainingType === 'absolute_training_degree' }">绝对练度</button>
+        <label>类:</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span>相对练度</span>
+          <label class="switch">
+            <input type="checkbox" v-model="showAbsoluteDegree">
+            <span class="slider round"></span>
+          </label>
+          <span>绝对练度</span>
+        </div>
       </div>
     </div>
 
@@ -91,7 +97,8 @@ export default {
   setup() {
     const unions = ref([]);
     const selectedUnions = ref([]);
-    const trainingType = ref('relative_training_degree');
+    const showAbsoluteDegree = ref(false);
+    const trainingType = computed(() => showAbsoluteDegree.value ? 'absolute_training_degree' : 'relative_training_degree');
     const characters = ref([]);
     const selectedCharacters = ref([]);
     const coefficients = ref({});
@@ -252,6 +259,7 @@ export default {
     return {
       unions,
       selectedUnions,
+      showAbsoluteDegree,
       trainingType,
       characters,
       selectedCharacters,
@@ -349,5 +357,64 @@ th span {
 button.active {
   background-color: #4CAF50;
   color: white;
+}
+button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #4CAF50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>

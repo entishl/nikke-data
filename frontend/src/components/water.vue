@@ -4,10 +4,14 @@
 
     <div class="controls">
       <div class="control-group">
-        <label>
-          <input type="checkbox" v-model="showRelativeDegree" />
-          切换为{{ showRelativeDegree ? '绝对练度' : '相对练度' }}
-        </label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span>相对练度</span>
+          <label class="switch">
+            <input type="checkbox" v-model="showRelativeDegree">
+            <span class="slider round"></span>
+          </label>
+          <span>绝对练度</span>
+        </div>
       </div>
       <div class="control-group">
         <label>
@@ -109,7 +113,7 @@ const selectedUnionIds = ref([]);
 const sortKey = ref(null);
 const sortDirection = ref('desc');
 
-const degreeType = computed(() => showRelativeDegree.value ? 'relative_training_degree' : 'absolute_training_degree');
+const degreeType = computed(() => showRelativeDegree.value ? 'absolute_training_degree' : 'relative_training_degree');
 
 const detailAttributes = [
   { key: 'core', label: '核心', raw_key: 'core' },
@@ -398,5 +402,59 @@ tbody th {
   left: 0;
   z-index: 1;
   background-color: #f9f9f9;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #409EFF;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #409EFF;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>

@@ -27,5 +27,5 @@ export const formatItem = (character) => {
 
 export const formatKilo = (value) => {
   if (typeof value !== 'number') return '';
-  return `${(value / 1000).toFixed(1)}k`;
+  return `${(value / 10000).toFixed(0)}`;
 };

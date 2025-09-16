@@ -20,6 +20,9 @@ COPY backend/ ./backend/
 COPY app.py .
 RUN mkdir -p /data
 
+# Set environment variable to indicate production
+ENV APP_ENV=production
+
 # Expose the port Hugging Face will use
 EXPOSE 7860
 
