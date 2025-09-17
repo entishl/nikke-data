@@ -8,3 +8,6 @@ Thumbs.db
 # Python virtual environment
 backend/venv/
 input/
+
+.env
+damage_simulation_plan.md

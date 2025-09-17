@@ -1,14 +1,22 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, sessionmaker, DeclarativeBase
 from sqlalchemy.pool import StaticPool
 
-DATABASE_URL = "sqlite:///:memory:"
+load_dotenv()
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///:memory:")
+
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
+    )
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
