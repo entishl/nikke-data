@@ -37,25 +37,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineEmits } from 'vue';
+import { ref, defineEmits, defineProps } from 'vue';
 import axios from 'axios';
 
-const unions = ref([]);
+const props = defineProps({
+  unions: {
+    type: Array,
+    required: true
+  }
+});
+
 const newUnionName = ref('');
 const editingUnionId = ref(null);
 const editingUnionName = ref('');
 
 const emit = defineEmits(['unions-updated']);
-
-const fetchUnions = async () => {
-  try {
-    const response = await axios.get('/api/unions/');
-    unions.value = response.data;
-  } catch (error) {
-    console.error('获取联盟列表失败:', error);
-    alert('获取联盟列表失败。');
-  }
-};
 
 const addUnion = async () => {
   if (!newUnionName.value.trim()) {
@@ -65,7 +61,6 @@ const addUnion = async () => {
   try {
     await axios.post('/api/unions/', null, { params: { name: newUnionName.value } });
     newUnionName.value = '';
-    await fetchUnions();
     emit('unions-updated');
   } catch (error) {
     console.error('添加联盟失败:', error);
@@ -91,7 +86,6 @@ const updateUnion = async (id) => {
   try {
     await axios.put(`/api/unions/${id}`, null, { params: { name: editingUnionName.value } });
     cancelEdit();
-    await fetchUnions();
     emit('unions-updated');
   } catch (error) {
     console.error('更新联盟失败:', error);
@@ -103,7 +97,6 @@ const deleteUnion = async (id) => {
   if (confirm('确定要删除这个联盟吗？')) {
     try {
       await axios.delete(`/api/unions/${id}`);
-      await fetchUnions();
       emit('unions-updated');
     } catch (error) {
       console.error('删除联盟失败:', error);
@@ -111,8 +104,6 @@ const deleteUnion = async (id) => {
     }
   }
 };
-
-onMounted(fetchUnions);
 </script>
 
 <style scoped>

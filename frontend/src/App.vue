@@ -36,19 +36,19 @@
         <button @click="activeTab = 'damage_simulation'" :class="{ active: activeTab === 'damage_simulation' }">伤害模拟</button>
       </div>
 
-      <div v-if="activeTab === 'characters'">
+      <div v-show="activeTab === 'characters'">
         <CharacterList :key="characterListKey" />
       </div>
-      <UnionManagement v-if="activeTab === 'unions'" @unions-updated="fetchUnions" />
-      <PlayerManagement v-if="activeTab === 'players'" />
-      <Settings v-if="activeTab === 'settings'" @settings-updated="refreshElementTraining" />
-      <Fire v-if="activeTab === 'fire'" />
-      <Water v-if="activeTab === 'water'" />
-      <Electronic v-if="activeTab === 'electronic'" />
-      <Iron v-if="activeTab === 'iron'" />
-      <Wind v-if="activeTab === 'wind'" />
-      <ElementTrainingAnalysis v-if="activeTab === 'element-training'" :key="elementTrainingKey" />
-      <DamageSimulation v-if="activeTab === 'damage_simulation'" />
+      <UnionManagement v-show="activeTab === 'unions'" :unions="unions" @unions-updated="fetchUnions" />
+      <PlayerManagement v-show="activeTab === 'players'" />
+      <Settings v-show="activeTab === 'settings'" @settings-updated="refreshElementTraining" />
+      <Fire v-show="activeTab === 'fire'" />
+      <Water v-show="activeTab === 'water'" />
+      <Electronic v-show="activeTab === 'electronic'" />
+      <Iron v-show="activeTab === 'iron'" />
+      <Wind v-show="activeTab === 'wind'" />
+      <ElementTrainingAnalysis v-show="activeTab === 'element-training'" :key="elementTrainingKey" />
+      <DamageSimulation v-show="activeTab === 'damage_simulation'" />
 
       <!-- Modal has been moved to CharacterList.vue -->
     </main>
