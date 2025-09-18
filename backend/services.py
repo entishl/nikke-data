@@ -34,9 +34,9 @@ def update_or_create_player(db: Session, player_name: str, synchro_level: int, r
         db.commit()
         
     return player
-from backend.utils import NIKKE_STATIC_DATA, NUMBER_DATA, RANK_DATA, EQUIPMENT_DATA, SUPER_DATA
+from backend.utils import NIKKE_STATIC_DATA, NUMBER_DATA, RANK_DATA, EQUIPMENT_DATA, SUPER_DATA, CUBE_DATA
 
-def calculate_character_attributes(char_data: dict, sync_level: int, cube_superiority_increase: float, coor_level: int = 0):
+def calculate_character_attributes(char_data: dict, sync_level: int, cube_superiority_increase: float,max_cube_level: int, coor_level: int = 0):
     """
     Calculates various character attributes based on raw data and static game data.
     Returns a dictionary of calculated attributes.
@@ -95,7 +95,9 @@ def calculate_character_attributes(char_data: dict, sync_level: int, cube_superi
         item_rare=item_rare,
         item_level=char_data.get("item_level", 1),
         number_data=NUMBER_DATA,
-        core=core
+        core=core,
+        cube_level=max_cube_level,
+        cube_data=CUBE_DATA
     )
 
     # Calculate relative_training_degree and absolute_training_degree
@@ -258,6 +260,7 @@ def process_upload_data(db: Session, data: dict, union_id: int, is_c_settings: d
                 char_data=char_data,
                 sync_level=data.get("synchroLevel", 1),
                 cube_superiority_increase=cube_superiority_increase,
+                max_cube_level=max_cube_level,
                 coor_level=coor_level
             )
             

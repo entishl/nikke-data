@@ -79,6 +79,15 @@ def get_item_attack(item_rare: str, item_level: int, number_data: dict) -> int:
             return item_atk_list[item_level_idx]
     return 0
 
+def get_cube_attack(cube_level: int, cube_data: list) -> int:
+    """
+    根据魔方等级查找攻击力。
+    """
+    for item in cube_data:
+        if item.get("cube_level") == cube_level:
+            return item.get("atk", 0)
+    return 0
+
 def _prepare_attack_components(
     sync_attack: float,
     grade: int,
@@ -92,7 +101,9 @@ def _prepare_attack_components(
     item_rare: str,
     item_level: int,
     number_data: dict,
-    core: int
+    core: int,
+    cube_level: int,
+    cube_data: list
 ) -> dict:
     """
     阶段一：准备所有攻击力组件。
@@ -108,13 +119,16 @@ def _prepare_attack_components(
     
     item_attack = get_item_attack(item_rare, item_level, number_data)
     
+    cube_attack = get_cube_attack(cube_level, cube_data)
+    
     return {
         "base_breakthrough_attack": base_breakthrough_attack,
         "favor_attack_bonus": favor_attack_bonus,
         "coor_bonus": coor_bonus,
         "equipment_attack": equipment_attack,
         "item_attack": item_attack,
-        "core": core
+        "core": core,
+        "cube_attack": cube_attack
     }
 
 def _execute_final_calculation(components: dict) -> float:
@@ -132,7 +146,8 @@ def _execute_final_calculation(components: dict) -> float:
     final_attack = (
         multiplied_sum +
         components["equipment_attack"] +
-        components["item_attack"]
+        components["item_attack"] +
+        components["cube_attack"]
     )
     
     return final_attack
@@ -150,7 +165,9 @@ def calculate_final_attack(
     item_rare: str,
     item_level: int,
     number_data: dict,
-    core: int
+    core: int,
+    cube_level: int,
+    cube_data: list
 ) -> float:
     """
     主函数：计算最终攻击力。
@@ -158,7 +175,7 @@ def calculate_final_attack(
     components = _prepare_attack_components(
         sync_attack, grade, corporation, character_id, super_character_ids,
         character_class_en, rank_data, coor_level, equipment_data,
-        item_rare, item_level, number_data, core
+        item_rare, item_level, number_data, core, cube_level, cube_data
     )
     
     final_attack = _execute_final_calculation(components)

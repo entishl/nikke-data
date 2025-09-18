@@ -31,7 +31,7 @@ def load_static_data():
     with open(current_dir / 'super.json', 'r', encoding='utf-8') as f:
         super_data = json.load(f)
         
-    return nikke_list_data, nikke_static_data, cube_level_map, number_data, rank_data, equipment_data, super_data
+    return nikke_list_data, nikke_static_data, cube_data, cube_level_map, number_data, rank_data, equipment_data, super_data
 
 # Load data on module import
-NIKKE_LIST_DATA, NIKKE_STATIC_DATA, CUBE_LEVEL_MAP, NUMBER_DATA, RANK_DATA, EQUIPMENT_DATA, SUPER_DATA = load_static_data()
+NIKKE_LIST_DATA, NIKKE_STATIC_DATA, CUBE_DATA, CUBE_LEVEL_MAP, NUMBER_DATA, RANK_DATA, EQUIPMENT_DATA, SUPER_DATA = load_static_data()
