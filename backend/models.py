@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, sessionmaker, DeclarativeBase
+from typing import List
 from sqlalchemy.pool import StaticPool
 
 load_dotenv()
@@ -93,3 +94,4 @@ class CharacterSetting(Base):
 
 def create_db_and_tables():
     Base.metadata.create_all(bind=engine)
+

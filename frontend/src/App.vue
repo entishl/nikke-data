@@ -6,18 +6,20 @@
 
     <main>
       <div class="upload-section">
-        <h2>上传 JSON 文件</h2>
-        <div class="upload-controls">
-          <select v-model="selectedUnionId">
-            <option :value="null">选择一个联盟</option>
-            <option v-for="union in unions" :key="union.id" :value="union.id">{{ union.name }}</option>
-          </select>
-          <input type="file" @change="handleFileUpload" accept=".json" multiple />
-          <button @click="submitFile" :disabled="filesToUpload.length === 0 || selectedUnionId === null">上传</button>
+        <h2 @click="toggleUploadVisibility" style="cursor: pointer;">上传 JSON 文件 (点击隐藏)</h2>
+        <div v-if="isUploadVisible" class="upload-content">
+          <div class="upload-controls">
+            <select v-model="selectedUnionId">
+              <option :value="null">选择一个联盟</option>
+              <option v-for="union in unions" :key="union.id" :value="union.id">{{ union.name }}</option>
+            </select>
+            <input type="file" @change="handleFileUpload" accept=".json" multiple />
+            <button @click="submitFile" :disabled="filesToUpload.length === 0 || selectedUnionId === null">上传</button>
+          </div>
+          <button @click="clearAllData" class="delete-btn">清空所有数据</button>
+          <span style="margin-left: 10px; color: #666;">先添加一个联盟后并选中该联盟再上传。 <br> 演示页面，试用后请清空数据，如需自用点击右上角三个点，duplicate this space</span>
+          <p v-if="uploadStatus">{{ uploadStatus }}</p>
         </div>
-        <button @click="clearAllData" class="delete-btn">清空所有数据</button>
-        <span style="margin-left: 10px; color: #666;">先添加一个联盟后并选中该联盟再上传。 <br> 演示页面，试用后请清空数据，如需自用点击右上角三个点，duplicate this space</span>
-        <p v-if="uploadStatus">{{ uploadStatus }}</p>
       </div>
 
       <div class="tabs">
@@ -31,6 +33,7 @@
         <button @click="activeTab = 'iron'" class="tab-iron" :class="{ active: activeTab === 'iron' }">铁甲</button>
         <button @click="activeTab = 'wind'" class="tab-wind" :class="{ active: activeTab === 'wind' }">风压</button>
         <button @click="activeTab = 'element-training'" :class="{ active: activeTab === 'element-training' }">元素总览</button>
+        <button @click="activeTab = 'damage_simulation'" :class="{ active: activeTab === 'damage_simulation' }">伤害模拟</button>
       </div>
 
       <div v-if="activeTab === 'characters'">
@@ -45,6 +48,7 @@
       <Iron v-if="activeTab === 'iron'" />
       <Wind v-if="activeTab === 'wind'" />
       <ElementTrainingAnalysis v-if="activeTab === 'element-training'" :key="elementTrainingKey" />
+      <DamageSimulation v-if="activeTab === 'damage_simulation'" />
 
       <!-- Modal has been moved to CharacterList.vue -->
     </main>
@@ -64,6 +68,7 @@ import Iron from './components/iron.vue';
 import Wind from './components/wind.vue';
 import UnionManagement from './components/UnionManagement.vue';
 import ElementTrainingAnalysis from './components/ElementTrainingAnalysis.vue';
+import DamageSimulation from './components/DamageSimulation.vue';
 
 const filesToUpload = ref([]);
 const uploadStatus = ref('');
@@ -72,6 +77,11 @@ const characterListKey = ref(0);
 const elementTrainingKey = ref(0);
 const unions = ref([]);
 const selectedUnionId = ref(null);
+const isUploadVisible = ref(true);
+
+const toggleUploadVisibility = () => {
+  isUploadVisible.value = !isUploadVisible.value;
+};
 
 const refreshElementTraining = () => {
   elementTrainingKey.value++;
