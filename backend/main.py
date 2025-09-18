@@ -363,8 +363,8 @@ def get_element_training_analysis(
 
 # Union CRUD
 @app.post("/api/unions/", response_model=dict)
-def create_union(name: str = Query(...), db: Session = Depends(get_db)):
-    db_union = models.Union(name=name)
+async def create_union(union: schemas.UnionCreate, db: Session = Depends(get_db)):
+    db_union = models.Union(name=union.name)
     db.add(db_union)
     db.commit()
     db.refresh(db_union)

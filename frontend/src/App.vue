@@ -37,9 +37,9 @@
       </div>
 
       <div v-show="activeTab === 'characters'">
-        <CharacterList :key="characterListKey" />
+        <CharacterList />
       </div>
-      <UnionManagement v-show="activeTab === 'unions'" :unions="unions" @unions-updated="fetchUnions" />
+      <UnionManagement v-show="activeTab === 'unions'" />
       <PlayerManagement v-show="activeTab === 'players'" />
       <Settings v-show="activeTab === 'settings'" @settings-updated="refreshElementTraining" />
       <Fire v-show="activeTab === 'fire'" />
@@ -58,6 +58,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { storeToRefs } from 'pinia';
+import { useUnionStore } from './stores/unionStore';
 import PlayerManagement from './components/PlayerManagement.vue';
 import CharacterList from './components/CharacterList.vue';
 import Settings from './components/Settings.vue';
@@ -73,11 +75,12 @@ import DamageSimulation from './components/DamageSimulation.vue';
 const filesToUpload = ref([]);
 const uploadStatus = ref('');
 const activeTab = ref('unions'); // 'characters' or 'players' or 'fire' or 'water' or 'electronic' or 'unions' or 'iron' or 'wind'
-const characterListKey = ref(0);
 const elementTrainingKey = ref(0);
-const unions = ref([]);
 const selectedUnionId = ref(null);
 const isUploadVisible = ref(true);
+
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 
 const toggleUploadVisibility = () => {
   isUploadVisible.value = !isUploadVisible.value;
@@ -92,6 +95,7 @@ const handleFileUpload = (event) => {
 };
 
 const submitFile = async () => {
+  console.log('--- Step 1: submitFile called in App.vue ---');
   if (filesToUpload.value.length === 0) return;
   const formData = new FormData();
   filesToUpload.value.forEach(file => {
@@ -108,7 +112,8 @@ const submitFile = async () => {
       },
     });
     uploadStatus.value = `${response.data.successful_files} 个文件上传成功, ${response.data.failed_files} 个文件上传失败。`;
-    characterListKey.value++;
+    console.log('--- Step 2: Calling unionStore.fetchUnions() from App.vue ---');
+    await unionStore.fetchUnions();
   } catch (error) {
     uploadStatus.value = '文件上传失败。';
     console.error(error);
@@ -120,7 +125,7 @@ const clearAllData = async () => {
     try {
       await axios.delete('/api/clear-all-data');
       alert('所有数据已成功清空。');
-      characterListKey.value++;
+      await unionStore.fetchUnions();
     } catch (error) {
       alert('清空数据时出错。');
       console.error('Error clearing all data:', error);
@@ -128,16 +133,9 @@ const clearAllData = async () => {
   }
 };
 
-const fetchUnions = async () => {
-  try {
-    const response = await axios.get('/api/unions/');
-    unions.value = response.data;
-  } catch (error) {
-    console.error('获取联盟列表失败:', error);
-  }
-};
-
-onMounted(fetchUnions);
+onMounted(() => {
+  unionStore.fetchUnions();
+});
 </script>
 
 <style>

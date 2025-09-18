@@ -117,9 +117,12 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useUnionStore } from '../stores/unionStore';
+import { storeToRefs } from 'pinia';
 import CharacterDamageDetailsModal from './CharacterDamageDetailsModal.vue';
 
-const unions = ref([]);
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 const players = ref([]);
 const selectedUnionId = ref(null);
 const selectedBasePlayerId = ref(null);
@@ -227,14 +230,6 @@ const startSimulation = async () => {
   }
 };
 
-const fetchUnions = async () => {
-  try {
-    const response = await axios.get('/api/unions/');
-    unions.value = response.data;
-  } catch (error) {
-    console.error('获取联盟列表失败:', error);
-  }
-};
 
 const fetchPlayers = async (unionId) => {
   if (!unionId) {
@@ -261,7 +256,7 @@ const fetchAllCharacters = async () => {
 };
 
 onMounted(() => {
-  fetchUnions();
+  unionStore.fetchUnions();
   fetchAllCharacters();
 });
 

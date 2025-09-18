@@ -43,10 +43,13 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { storeToRefs } from 'pinia';
+import { useUnionStore } from '../stores/unionStore';
 
 const players = ref([]);
-const unions = ref([]);
 const selectedUnionIds = ref([]);
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 const sortKey = ref('name');
 const sortOrder = ref('asc');
 
@@ -89,21 +92,11 @@ const deletePlayer = async (playerName) => {
   }
 };
 
-const fetchUnions = async () => {
-  try {
-    const response = await axios.get('/api/unions/');
-    unions.value = response.data;
-  } catch (error) {
-    console.error('获取联盟列表失败:', error);
-  }
-};
-
 watch(selectedUnionIds, () => {
   fetchPlayers();
 });
 
 onMounted(() => {
-  fetchUnions();
   fetchPlayers();
 });
 </script>

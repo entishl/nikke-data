@@ -252,6 +252,10 @@ def process_upload_data(db: Session, data: dict, union_id: int, is_c_settings: d
 
     for element, characters_in_element in data.get("elements", {}).items():
         for char_data in characters_in_element:
+            # 新增的过滤逻辑
+            if 'skill1_level' not in char_data:
+                continue
+
             if "id" not in char_data or "name_cn" not in char_data:
                 continue
 
@@ -349,7 +353,7 @@ def run_damage_simulation(db: Session, request: schemas.DamageSimulationRequest)
                 continue
 
             # Avoid division by zero
-            if not base_char_stats.final_attack or not base_char_stats.total_stat_atk:
+            if not base_char_stats.final_attack:
                 att_weights[char_input.character_id] = 0
                 continue
 
@@ -392,6 +396,7 @@ def run_damage_simulation(db: Session, request: schemas.DamageSimulationRequest)
         for team in request.teams:
             team_total_damage = 0
             character_details = []
+            team_is_valid = True  # 标志队伍是否完整
 
             # Get all character stats for the current player in one go
             player_character_ids = [char.character_id for char in team.characters]
@@ -412,8 +417,12 @@ def run_damage_simulation(db: Session, request: schemas.DamageSimulationRequest)
 
                 target_char_stats = player_chars_map.get(char_id)
                 
-                # If the player doesn't have this character, skip
-                if not target_char_stats or not target_char_stats.final_attack:
+                # If the player doesn't have this character, the team is invalid
+                if not target_char_stats:
+                    team_is_valid = False
+                    break  # 立即跳出角色循环
+
+                if not target_char_stats.final_attack:
                     simulated_damage = 0
                 else:
                     element_weight = 1 if target_char_stats.element == team.element else 0
@@ -442,9 +451,13 @@ def run_damage_simulation(db: Session, request: schemas.DamageSimulationRequest)
                 team_total_damage += simulated_damage
                 character_details.append(schemas.SimulatedCharacterDetail(
                     character_id=char_id,
-                    name_cn=target_char_stats.name_cn if target_char_stats else "N/A",
+                    name_cn=target_char_stats.name_cn,
                     simulated_damage=simulated_damage
                 ))
+
+            # 如果队伍不完整，总伤害设为 None
+            if not team_is_valid:
+                team_total_damage = None
 
             player_team_damages[team.element] = schemas.SimulatedTeamDamage(
                 total_damage=team_total_damage,

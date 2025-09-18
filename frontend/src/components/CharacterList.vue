@@ -116,6 +116,11 @@ import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import CharacterDetailsModal from './CharacterDetailsModal.vue';
 import { formatGradeAndCore, formatItem, formatKilo } from '../utils.js';
+import { useUnionStore } from '../stores/unionStore';
+import { storeToRefs } from 'pinia';
+
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 
 const allCharacters = ref([]); // Store all characters fetched from the backend
 const characters = computed(() => filteredAndSortedCharacters.value); // This will be the computed property for display
@@ -123,7 +128,6 @@ const characters = computed(() => filteredAndSortedCharacters.value); // This wi
 const characterNameFilter = ref('');
 const players = ref([]);
 const selectedPlayers = ref([]);
-const unions = ref([]);
 const selectedUnionIds = ref([]); // Changed from selectedUnionId
 
 // Filter refs
@@ -262,15 +266,6 @@ const fetchPlayers = async () => {
   }
 };
 
-const fetchUnions = async () => {
-  try {
-    const response = await axios.get('/api/unions/');
-    unions.value = response.data;
-  } catch (error) {
-    console.error('获取联盟列表失败:', error);
-  }
-};
-
 watch(selectedUnionIds, () => {
   fetchPlayers();
   fetchCharacters();
@@ -294,7 +289,6 @@ const clearSelection = () => {
 
 onMounted(() => {
   fetchFilterOptions();
-  fetchUnions();
   fetchPlayers();
   fetchCharacters();
 });

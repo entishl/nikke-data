@@ -5,10 +5,18 @@
     <div class="controls">
       <!-- Union Filter -->
       <div class="control-group">
-        <label for="union-select">联盟:</label>
-        <select id="union-select" v-model="selectedUnions" multiple>
-          <option v-for="union in unions" :key="union.id" :value="union.id">{{ union.name }}</option>
-        </select>
+        <h4>按联盟筛选</h4>
+        <div class="filter-items-container">
+          <div v-for="union in unions" :key="union.id" class="filter-item">
+            <input
+              type="checkbox"
+              :id="'union-analysis-' + union.id"
+              :value="union.id"
+              v-model="selectedUnionIds"
+            />
+            <label :for="'union-analysis-' + union.id">{{ union.name }}</label>
+          </div>
+        </div>
       </div>
 
       <!-- Training Type Switch -->
@@ -72,7 +80,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="player in sortedAnalysisResults" :key="player.player_name">
+            <tr v-for="player in sortedAnalysisResults" :key="`${player.union_id}-${player.player_name}`">
               <td>{{ player.player_name }}</td>
               <td :class="getCellClass(player, 'Fire')">{{ formatElementValue(player.elements.Fire) }}</td>
               <td :class="getCellClass(player, 'Water')">{{ formatElementValue(player.elements.Water) }}</td>
@@ -87,193 +95,175 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted, watch, computed } from 'vue';
+<script setup>
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import axios from 'axios';
+import { storeToRefs } from 'pinia';
+import { useUnionStore } from '../stores/unionStore';
 import { formatKilo } from '../utils.js';
 
-export default {
-  name: 'ElementTrainingAnalysis',
-  setup() {
-    const unions = ref([]);
-    const selectedUnions = ref([]);
-    const showAbsoluteDegree = ref(false);
-    const trainingType = computed(() => showAbsoluteDegree.value ? 'absolute_training_degree' : 'relative_training_degree');
-    const characters = ref([]);
-    const selectedCharacters = ref([]);
-    const coefficients = ref({});
-    const analysisResults = ref([]);
-    const sortKey = ref('');
-    const sortOrder = ref('asc');
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 
-    const fetchUnions = async () => {
-      try {
-        const response = await axios.get('/api/unions/');
-        unions.value = response.data;
-      } catch (error) {
-        console.error('Error fetching unions:', error);
-      }
-    };
+const selectedUnionIds = ref([]);
+const showAbsoluteDegree = ref(false);
+const trainingType = computed(() => showAbsoluteDegree.value ? 'absolute_training_degree' : 'relative_training_degree');
+const characters = ref([]);
+const selectedCharacters = ref([]);
+const coefficients = ref({});
+const analysisResults = ref([]);
+const sortKey = ref('');
+const sortOrder = ref('asc');
 
-    const fetchCharacters = async () => {
-      try {
-        const response = await axios.get(`/api/characters/?_t=${new Date().getTime()}`);
-        const allCharacters = response.data;
-        
-        const uniqueCharacters = [];
-        const seenIds = new Set();
-        
-        for (const char of allCharacters) {
-          if (char.is_C && !seenIds.has(char.character_id)) {
-            uniqueCharacters.push({
-              id: char.character_id,
-              name_cn: char.name_cn,
-              element: char.element, // Keep element for grouping
-            });
-            seenIds.add(char.character_id);
-          }
-        }
-        
-        characters.value = uniqueCharacters.sort((a, b) => a.id - b.id);
-        
-        // Default select all characters
-        selectedCharacters.value = characters.value.map(char => char.id);
-
-        // Initialize coefficients
-        characters.value.forEach(char => {
-            coefficients.value[char.id] = 1;
+const fetchCharacters = async () => {
+  try {
+    const response = await axios.get(`/api/characters/?_t=${new Date().getTime()}`);
+    const allCharacters = response.data;
+    
+    const uniqueCharacters = [];
+    const seenIds = new Set();
+    
+    for (const char of allCharacters) {
+      if (char.is_C && !seenIds.has(char.character_id)) {
+        uniqueCharacters.push({
+          id: char.character_id,
+          name_cn: char.name_cn,
+          element: char.element, // Keep element for grouping
         });
-
-      } catch (error) {
-        console.error('Error fetching characters:', error);
+        seenIds.add(char.character_id);
       }
-    };
+    }
+    
+    characters.value = uniqueCharacters.sort((a, b) => a.id - b.id);
+    
+    // Default select all characters
+    selectedCharacters.value = characters.value.map(char => char.id);
 
-    const performAnalysis = async () => {
-      if (selectedCharacters.value.length === 0) {
-        analysisResults.value = [];
-        return;
-      }
-
-      const characterCoefficients = {};
-      selectedCharacters.value.forEach(id => {
-        characterCoefficients[id] = coefficients.value[id] || 1;
-      });
-
-      const formData = new FormData();
-      if (selectedUnions.value.length > 0) {
-          formData.append('union_ids', selectedUnions.value.join(','));
-      }
-      formData.append('character_coefficients', JSON.stringify(characterCoefficients));
-      formData.append('training_type', trainingType.value);
-
-      try {
-        const response = await axios.post('/api/element-training-analysis/', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        analysisResults.value = response.data;
-      } catch (error) {
-        console.error('Error performing analysis:', error);
-      }
-    };
-
-    const sortBy = (key) => {
-      if (sortKey.value === key) {
-        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortKey.value = key;
-        sortOrder.value = 'asc';
-      }
-    };
-
-    const sortedAnalysisResults = computed(() => {
-      if (!sortKey.value) {
-        return analysisResults.value;
-      }
-
-      return [...analysisResults.value].sort((a, b) => {
-        let aValue, bValue;
-
-        if (sortKey.value === 'player_name') {
-          aValue = a.player_name;
-          bValue = b.player_name;
-        } else {
-          aValue = a.elements[sortKey.value];
-          bValue = b.elements[sortKey.value];
-        }
-
-        if (aValue < bValue) {
-          return sortOrder.value === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortOrder.value === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
+    // Initialize coefficients
+    characters.value.forEach(char => {
+        coefficients.value[char.id] = 1;
     });
 
-    const groupedCharacters = computed(() => {
-      return characters.value.reduce((groups, char) => {
-        const element = char.element || 'Unknown';
-        if (!groups[element]) {
-          groups[element] = [];
+  } catch (error) {
+    console.error('Error fetching characters:', error);
+  }
+};
+
+const performAnalysis = async () => {
+  console.log('--- Step 6: performAnalysis called ---');
+  if (selectedCharacters.value.length === 0) {
+    analysisResults.value = [];
+    return;
+  }
+
+  const characterCoefficients = {};
+  selectedCharacters.value.forEach(id => {
+    characterCoefficients[id] = coefficients.value[id] || 1;
+  });
+
+  const formData = new FormData();
+  if (selectedUnionIds.value.length > 0) {
+      formData.append('union_ids', selectedUnionIds.value.join(','));
+  }
+  formData.append('character_coefficients', JSON.stringify(characterCoefficients));
+  formData.append('training_type', trainingType.value);
+
+  try {
+    const response = await axios.post('/api/element-training-analysis/', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
         }
-        groups[element].push(char);
-        return groups;
-      }, {});
     });
+    analysisResults.value = response.data;
+    console.log('--- Step 7: Analysis result to be rendered:', analysisResults.value);
+  } catch (error) {
+    console.error('Error performing analysis:', error);
+  }
+};
 
-    onMounted(() => {
-      fetchUnions();
-      fetchCharacters();
-    });
+const sortBy = (key) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+};
 
-    watch([selectedUnions, selectedCharacters, trainingType, coefficients], performAnalysis, { deep: true });
+const sortedAnalysisResults = computed(() => {
+  if (!sortKey.value) {
+    return analysisResults.value;
+  }
 
-    const formatElementValue = (value) => {
-      if (trainingType.value === 'absolute_training_degree') {
-        return formatKilo(value);
-      }
-      return value.toFixed(2);
-    };
+  return [...analysisResults.value].sort((a, b) => {
+    let aValue, bValue;
 
-    const getCellClass = (player, element) => {
-      const topElements = getTopElements(player);
-      if (topElements.includes(element)) {
-        return `${element.toLowerCase()}-highlight`;
-      }
-      return '';
-    };
+    if (sortKey.value === 'player_name') {
+      aValue = a.player_name;
+      bValue = b.player_name;
+    } else {
+      aValue = a.elements[sortKey.value];
+      bValue = b.elements[sortKey.value];
+    }
 
-    const getTopElements = (player) => {
-      const elements = player.elements;
-      const sortedElements = Object.entries(elements)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 3)
-        .map(([name]) => name);
-      return sortedElements;
-    };
+    if (aValue < bValue) {
+      return sortOrder.value === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortOrder.value === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+});
 
-    return {
-      unions,
-      selectedUnions,
-      showAbsoluteDegree,
-      trainingType,
-      characters,
-      selectedCharacters,
-      coefficients,
-      analysisResults,
-      groupedCharacters,
-      formatElementValue,
-      getCellClass,
-      sortedAnalysisResults,
-      sortBy,
-      sortKey,
-      sortOrder,
-    };
-  },
+const groupedCharacters = computed(() => {
+  return characters.value.reduce((groups, char) => {
+    const element = char.element || 'Unknown';
+    if (!groups[element]) {
+      groups[element] = [];
+    }
+    groups[element].push(char);
+    return groups;
+  }, {});
+});
+
+onMounted(() => {
+  unionStore.fetchUnions();
+  fetchCharacters();
+  performAnalysis(); // Initial analysis
+});
+
+watch([selectedUnionIds, selectedCharacters, trainingType, coefficients], performAnalysis, { deep: true });
+
+watch(() => unionStore.unions, async (newValue, oldValue) => {
+  console.log('--- Step 5: Watch triggered in ElementTrainingAnalysis ---');
+  console.log('New unions:', newValue, 'Old unions:', oldValue);
+  await nextTick();
+  performAnalysis();
+}, { deep: true });
+
+const formatElementValue = (value) => {
+  if (trainingType.value === 'absolute_training_degree') {
+    return formatKilo(value);
+  }
+  return value.toFixed(2);
+};
+
+const getCellClass = (player, element) => {
+  const topElements = getTopElements(player);
+  if (topElements.includes(element)) {
+    return `${element.toLowerCase()}-highlight`;
+  }
+  return '';
+};
+
+const getTopElements = (player) => {
+  const elements = player.elements;
+  const sortedElements = Object.entries(elements)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([name]) => name);
+  return sortedElements;
 };
 </script>
 
@@ -290,8 +280,23 @@ export default {
 
 .control-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
+}
+
+.control-group h4 {
+  margin: 0 0 5px 0;
+}
+
+.filter-items-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-item {
+  display: inline-flex;
+  align-items: center;
 }
 
 .main-content {

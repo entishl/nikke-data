@@ -37,21 +37,16 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps } from 'vue';
-import axios from 'axios';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useUnionStore } from '../stores/unionStore';
 
-const props = defineProps({
-  unions: {
-    type: Array,
-    required: true
-  }
-});
+const unionStore = useUnionStore();
+const { unions } = storeToRefs(unionStore);
 
 const newUnionName = ref('');
 const editingUnionId = ref(null);
 const editingUnionName = ref('');
-
-const emit = defineEmits(['unions-updated']);
 
 const addUnion = async () => {
   if (!newUnionName.value.trim()) {
@@ -59,12 +54,10 @@ const addUnion = async () => {
     return;
   }
   try {
-    await axios.post('/api/unions/', null, { params: { name: newUnionName.value } });
+    await unionStore.addUnion({ name: newUnionName.value });
     newUnionName.value = '';
-    emit('unions-updated');
   } catch (error) {
-    console.error('添加联盟失败:', error);
-    alert('添加联盟失败。');
+    // 错误已在 store 中处理
   }
 };
 
@@ -84,23 +77,19 @@ const updateUnion = async (id) => {
     return;
   }
   try {
-    await axios.put(`/api/unions/${id}`, null, { params: { name: editingUnionName.value } });
+    await unionStore.updateUnion(id, editingUnionName.value);
     cancelEdit();
-    emit('unions-updated');
   } catch (error) {
-    console.error('更新联盟失败:', error);
-    alert('更新联盟失败。');
+    // 错误已在 store 中处理
   }
 };
 
 const deleteUnion = async (id) => {
   if (confirm('确定要删除这个联盟吗？')) {
     try {
-      await axios.delete(`/api/unions/${id}`);
-      emit('unions-updated');
+      await unionStore.deleteUnion(id);
     } catch (error) {
-      console.error('删除联盟失败:', error);
-      alert(`删除联盟失败: ${error.response?.data?.detail || '未知错误'}`);
+      // 错误已在 store 中处理
     }
   }
 };

@@ -70,3 +70,6 @@ class SimulationPlayerResult(BaseModel):
 
 class DamageSimulationResponse(BaseModel):
     simulation_results: List[SimulationPlayerResult]
+
+class UnionCreate(BaseModel):
+    name: str
