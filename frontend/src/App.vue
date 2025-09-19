@@ -17,7 +17,7 @@
             <button @click="submitFile" :disabled="filesToUpload.length === 0 || selectedUnionId === null">上传</button>
           </div>
           <button @click="clearAllData" class="delete-btn">清空所有数据</button>
-          <span style="margin-left: 10px; color: #666;">先添加一个联盟后并选中该联盟再上传。 <br> 演示页面，试用后请清空数据，如需自用点击右上角三个点，duplicate this space</span>
+          <span style="margin-left: 10px; color: #666;">先添加一个联盟后并选中该联盟再上传。(如果有显示问题请手动刷新) <br> 演示页面，试用后请清空数据，如需自用点击右上角三个点，duplicate this space</span>
           <p v-if="uploadStatus">{{ uploadStatus }}</p>
         </div>
       </div>
