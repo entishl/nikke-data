@@ -1,10 +1,6 @@
 import sys
 import os
 
-# 修复：强制将新环境的 site-packages 添加到 sys.path
-site_packages_path = r'C:\Users\enty\miniconda3\envs\lucky-env\lib\site-packages'
-if site_packages_path not in sys.path:
-    sys.path.insert(0, site_packages_path)
 
 from dotenv import load_dotenv
 
@@ -12,5 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from backend.main import app
+import uvicorn
 
 # uvicorn 会使用这个 'app' 对象，此时所有配置都已加载。
+
+if __name__ == "__main__":
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
