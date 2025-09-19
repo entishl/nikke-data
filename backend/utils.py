@@ -1,5 +1,16 @@
 import json
 from pathlib import Path
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    """验证明文密码和哈希密码是否匹配"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    """生成密码的哈希值"""
+    return pwd_context.hash(password)
 
 def load_static_data():
     """Loads all static JSON data files."""

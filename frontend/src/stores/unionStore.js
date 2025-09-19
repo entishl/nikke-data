@@ -7,13 +7,12 @@ import { defineStore } from 'pinia';
 
 export const useUnionStore = defineStore('ui', {
   state: () => ({
-    // Example state:
-    // isSettingsPanelOpen: false,
+    locale: localStorage.getItem('locale') || 'en',
   }),
   actions: {
-    // Example action:
-    // toggleSettingsPanel() {
-    //   this.isSettingsPanelOpen = !this.isSettingsPanelOpen;
-    // },
+    setLocale(newLocale) {
+      this.locale = newLocale;
+      localStorage.setItem('locale', newLocale);
+    },
   },
 });

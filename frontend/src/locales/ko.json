@@ -1,0 +1,66 @@
+{
+  "greeting": "안녕하세요, 월드!",
+  "playerDataHub": {
+    "title": "플레이어 데이터 가져오기",
+    "playerList": {
+      "title": "플레이어 목록",
+      "wip": "(목록 표시는 나중 단계에서 구현될 예정입니다)"
+    },
+    "loadingUnions": "연합 로드 중...",
+    "loadUnionsError": "연합을 로드하지 못했습니다.",
+    "form": {
+      "selectUnionLabel": "연합 선택:",
+      "selectUnionPlaceholder": "연합을 선택하세요",
+      "noUnionsPlaceholder": "먼저 연합을 생성하세요",
+      "selectFileLabel": "JSON 파일 선택:",
+      "uploadingButton": "업로드 중...",
+      "uploadButton": "데이터 업로드"
+    },
+    "uploadStatus": {
+      "successMessage": "업로드 성공!",
+      "filesSuccess": "개 파일 성공,",
+      "filesFailed": "개 파일 실패.",
+      "errorMessage": "업로드 실패:"
+    },
+    "alerts": {
+      "selectUnionAndFile": "연합과 하나 이상의 파일을 선택하세요."
+    }
+  },
+  "unionManagement": {
+    "title": "연합 관리",
+    "add": {
+      "placeholder": "새 연합 이름 입력",
+      "addingButton": "추가 중...",
+      "addButton": "연합 추가",
+      "errorMessage": "추가하지 못했습니다:"
+    },
+    "loading": "연합 로드 중...",
+    "loadError": "연합을 로드하지 못했습니다:",
+    "table": {
+      "header": {
+        "name": "연합 이름",
+        "actions": "작업"
+      },
+      "buttons": {
+        "save": "저장",
+        "cancel": "취소",
+        "edit": "편집",
+        "delete": "삭제"
+      }
+    },
+    "emptyState": "아직 연합이 없습니다. 하나 추가하세요.",
+    "alerts": {
+      "nameRequired": "연합 이름은 비워 둘 수 없습니다.",
+      "confirmDelete": "이 연합을 정말로 삭제하시겠습니까? 관련된 플레이어 데이터도 삭제됩니다."
+    }
+  },
+  "services": {
+    "api": {
+      "errors": {
+        "network": "네트워크 오류. 연결을 확인하세요.",
+        "noResponse": "서버에서 응답이 없습니다. 나중에 다시 시도하세요.",
+        "serverError": "서버 오류:"
+      }
+    }
+  }
+}

@@ -1,33 +1,25 @@
 import os
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean
-from sqlalchemy.orm import relationship, sessionmaker, DeclarativeBase
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime
+from sqlalchemy.orm import relationship
 from typing import List
-from sqlalchemy.pool import StaticPool
+from .database import Base, engine
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///:memory:")
-
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(
-        DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool
-    )
-else:
-    engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-class Base(DeclarativeBase):
-    pass
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
 
 class Union(Base):
     __tablename__ = "unions"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     players = relationship("Player", back_populates="union")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User")
 
 class Player(Base):
     __tablename__ = "players"
@@ -39,6 +31,8 @@ class Player(Base):
     union_id = Column(Integer, ForeignKey("unions.id"))
     union = relationship("Union", back_populates="players")
     characters = relationship("Character", back_populates="player", cascade="all, delete-orphan")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User")
 
 class Character(Base):
     __tablename__ = "characters"
@@ -92,6 +86,12 @@ class CharacterSetting(Base):
     character_id = Column(Integer, unique=True, index=True)
     is_C = Column(Boolean, default=True, nullable=False)
 
+import asyncio
+
+async def create_db_and_tables_async():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 def create_db_and_tables():
-    Base.metadata.create_all(bind=engine)
+    asyncio.run(create_db_and_tables_async())
 

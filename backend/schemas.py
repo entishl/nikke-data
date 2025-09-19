@@ -1,5 +1,46 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+
+class User(UserBase):
+    id: int
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+class PlayerBase(BaseModel):
+    name: str
+    synchro_level: int
+    resilience_cube_level: int
+    bastion_cube_level: int
+    union_id: Optional[int] = None
+
+class PlayerCreate(PlayerBase):
+    user_id: int
+
+class PlayerUpdate(BaseModel):
+    name: Optional[str] = None
+    synchro_level: Optional[int] = None
+    resilience_cube_level: Optional[int] = None
+    bastion_cube_level: Optional[int] = None
+    union_id: Optional[int] = None
 
 class CharacterResponse(BaseModel):
     id: int
@@ -32,8 +73,7 @@ class CharacterResponse(BaseModel):
     is_C: Optional[bool] = None
     breakthrough_coefficient: Optional[float] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Damage Simulation Models ---
@@ -73,3 +113,14 @@ class DamageSimulationResponse(BaseModel):
 
 class UnionCreate(BaseModel):
     name: str
+
+class UnionUpdate(BaseModel):
+    name: Optional[str] = None
+
+class Union(BaseModel):
+    id: int
+    name: str
+    user_id: int
+
+    class Config:
+        from_attributes = True

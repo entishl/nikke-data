@@ -1,0 +1,66 @@
+{
+  "greeting": "你好，世界！",
+  "playerDataHub": {
+    "title": "玩家数据导入",
+    "playerList": {
+      "title": "玩家列表",
+      "wip": "(列表展示功能将在后续阶段实现)"
+    },
+    "loadingUnions": "正在加载联盟列表...",
+    "loadUnionsError": "加载联盟列表失败。",
+    "form": {
+      "selectUnionLabel": "选择联盟:",
+      "selectUnionPlaceholder": "请选择一个联盟",
+      "noUnionsPlaceholder": "请先创建一个联盟",
+      "selectFileLabel": "选择 JSON 文件:",
+      "uploadingButton": "上传中...",
+      "uploadButton": "上传数据"
+    },
+    "uploadStatus": {
+      "successMessage": "上传成功!",
+      "filesSuccess": "个文件成功,",
+      "filesFailed": "个失败。",
+      "errorMessage": "上传失败:"
+    },
+    "alerts": {
+      "selectUnionAndFile": "请选择一个联盟并选择至少一个文件。"
+    }
+  },
+  "unionManagement": {
+    "title": "联盟管理",
+    "add": {
+      "placeholder": "输入新联盟名称",
+      "addingButton": "添加中...",
+      "addButton": "添加联盟",
+      "errorMessage": "添加失败:"
+    },
+    "loading": "正在加载联盟列表...",
+    "loadError": "加载联盟列表失败:",
+    "table": {
+      "header": {
+        "name": "联盟名称",
+        "actions": "操作"
+      },
+      "buttons": {
+        "save": "保存",
+        "cancel": "取消",
+        "edit": "编辑",
+        "delete": "删除"
+      }
+    },
+    "emptyState": "暂无联盟，请先添加一个。",
+    "alerts": {
+      "nameRequired": "联盟名称不能为空。",
+      "confirmDelete": "确定要删除这个联盟吗？此操作将一并删除关联的玩家数据。"
+    }
+  },
+  "services": {
+    "api": {
+      "errors": {
+        "network": "网络错误，请检查您的网络连接。",
+        "noResponse": "服务器无响应，请稍后重试。",
+        "serverError": "服务器错误："
+      }
+    }
+  }
+}

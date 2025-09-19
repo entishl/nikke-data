@@ -1,0 +1,66 @@
+{
+  "greeting": "Hello, World!",
+  "playerDataHub": {
+    "title": "Player Data Import",
+    "playerList": {
+      "title": "Player List",
+      "wip": "(List display will be implemented in a later phase)"
+    },
+    "loadingUnions": "Loading unions...",
+    "loadUnionsError": "Failed to load unions.",
+    "form": {
+      "selectUnionLabel": "Select Union:",
+      "selectUnionPlaceholder": "Please select a union",
+      "noUnionsPlaceholder": "Please create a union first",
+      "selectFileLabel": "Select JSON File(s):",
+      "uploadingButton": "Uploading...",
+      "uploadButton": "Upload Data"
+    },
+    "uploadStatus": {
+      "successMessage": "Upload successful!",
+      "filesSuccess": "files succeeded,",
+      "filesFailed": "files failed.",
+      "errorMessage": "Upload failed:"
+    },
+    "alerts": {
+      "selectUnionAndFile": "Please select a union and at least one file."
+    }
+  },
+  "unionManagement": {
+    "title": "Union Management",
+    "add": {
+      "placeholder": "Enter new union name",
+      "addingButton": "Adding...",
+      "addButton": "Add Union",
+      "errorMessage": "Failed to add:"
+    },
+    "loading": "Loading unions...",
+    "loadError": "Failed to load unions:",
+    "table": {
+      "header": {
+        "name": "Union Name",
+        "actions": "Actions"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+    "emptyState": "No unions yet, please add one.",
+    "alerts": {
+      "nameRequired": "Union name cannot be empty.",
+      "confirmDelete": "Are you sure you want to delete this union? This will also delete associated player data."
+    }
+  },
+  "services": {
+    "api": {
+      "errors": {
+        "network": "Network Error. Please check your connection.",
+        "noResponse": "No response from server. Please try again later.",
+        "serverError": "Server Error:"
+      }
+    }
+  }
+}

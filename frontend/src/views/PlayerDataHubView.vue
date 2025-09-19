@@ -1,15 +1,15 @@
 <template>
   <div class="player-data-hub-view">
-    <h2>玩家数据导入</h2>
+    <h2>{{ t('playerDataHub.title') }}</h2>
     <div class="upload-section">
-      <div v-if="unionsIsLoading">正在加载联盟列表...</div>
-      <div v-else-if="unionsIsError">加载联盟列表失败。</div>
+      <div v-if="unionsIsLoading">{{ t('playerDataHub.loadingUnions') }}</div>
+      <div v-else-if="unionsIsError">{{ t('playerDataHub.loadUnionsError') }}</div>
       <form v-else class="upload-form" @submit.prevent="handleUpload">
         <div class="form-group">
-          <label for="union-select">选择联盟:</label>
+          <label for="union-select">{{ t('playerDataHub.form.selectUnionLabel') }}</label>
           <select id="union-select" v-model="selectedUnionId" :disabled="!unions || unions.length === 0">
             <option :value="null" disabled>
-              {{ unions && unions.length > 0 ? '请选择一个联盟' : '请先创建一个联盟' }}
+              {{ unions && unions.length > 0 ? t('playerDataHub.form.selectUnionPlaceholder') : t('playerDataHub.form.noUnionsPlaceholder') }}
             </option>
             <option v-for="union in unions" :key="union.id" :value="union.id">
               {{ union.name }}
@@ -18,7 +18,7 @@
         </div>
 
         <div class="form-group">
-          <label for="file-input">选择 JSON 文件:</label>
+          <label for="file-input">{{ t('playerDataHub.form.selectFileLabel') }}</label>
           <input
             id="file-input"
             type="file"
@@ -29,31 +29,37 @@
         </div>
 
         <button type="submit" :disabled="!selectedUnionId || filesToUpload.length === 0 || uploadMutation.isPending.value">
-          {{ uploadMutation.isPending.value ? '上传中...' : '上传数据' }}
+          {{ uploadMutation.isPending.value ? t('playerDataHub.form.uploadingButton') : t('playerDataHub.form.uploadButton') }}
         </button>
       </form>
 
       <div v-if="uploadMutation.isSuccess.value" class="status-message success">
-        <p>上传成功!</p>
-        <p>{{ uploadMutation.data.value?.data.successful_files }} 个文件成功, {{ uploadMutation.data.value?.data.failed_files }} 个失败。</p>
+        <p>{{ t('playerDataHub.uploadStatus.successMessage') }}</p>
+        <p>
+          {{ uploadMutation.data.value?.data.successful_files }} {{ t('playerDataHub.uploadStatus.filesSuccess') }}
+          {{ uploadMutation.data.value?.data.failed_files }} {{ t('playerDataHub.uploadStatus.filesFailed') }}
+        </p>
       </div>
       <div v-if="uploadMutation.isError.value" class="status-message error">
-        <p>上传失败: {{ uploadMutation.error.value?.message }}</p>
+        <p>{{ t('playerDataHub.uploadStatus.errorMessage') }} {{ uploadMutation.error.value?.message }}</p>
       </div>
     </div>
 
     <!-- The player list display will be implemented in a later phase -->
     <div class="player-list-section">
-      <h3>玩家列表</h3>
-      <p>(列表展示功能将在后续阶段实现)</p>
+      <h3>{{ t('playerDataHub.playerList.title') }}</h3>
+      <p>{{ t('playerDataHub.playerList.wip') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useQuery, useMutation } from '@tanstack/vue-query';
 import { getUnions, uploadPlayerData } from '../services/unionService';
+
+const { t } = useI18n();
 
 // --- State ---
 const selectedUnionId = ref(null);
@@ -77,7 +83,7 @@ const handleFileChange = (event) => {
 
 const handleUpload = () => {
   if (!selectedUnionId.value || filesToUpload.value.length === 0) {
-    alert('请选择一个联盟并选择至少一个文件。');
+    alert(t('playerDataHub.alerts.selectUnionAndFile'));
     return;
   }
 

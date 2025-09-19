@@ -1,0 +1,66 @@
+{
+  "greeting": "你好，世界！",
+  "playerDataHub": {
+    "title": "玩家資料匯入",
+    "playerList": {
+      "title": "玩家列表",
+      "wip": "（列表顯示將在後續階段實作）"
+    },
+    "loadingUnions": "正在載入公會...",
+    "loadUnionsError": "載入公會失敗。",
+    "form": {
+      "selectUnionLabel": "選擇公會：",
+      "selectUnionPlaceholder": "請選擇一個公會",
+      "noUnionsPlaceholder": "請先建立一個公會",
+      "selectFileLabel": "選擇 JSON 檔案：",
+      "uploadingButton": "正在上傳...",
+      "uploadButton": "上傳資料"
+    },
+    "uploadStatus": {
+      "successMessage": "上傳成功！",
+      "filesSuccess": "個檔案成功，",
+      "filesFailed": "個檔案失敗。",
+      "errorMessage": "上傳失敗："
+    },
+    "alerts": {
+      "selectUnionAndFile": "請選擇一個公會和至少一個檔案。"
+    }
+  },
+  "unionManagement": {
+    "title": "公會管理",
+    "add": {
+      "placeholder": "輸入新的公會名稱",
+      "addingButton": "正在新增...",
+      "addButton": "新增公會",
+      "errorMessage": "新增失敗："
+    },
+    "loading": "正在載入公會...",
+    "loadError": "載入公會失敗：",
+    "table": {
+      "header": {
+        "name": "公會名稱",
+        "actions": "操作"
+      },
+      "buttons": {
+        "save": "儲存",
+        "cancel": "取消",
+        "edit": "編輯",
+        "delete": "刪除"
+      }
+    },
+    "emptyState": "尚無公會，請新增一個。",
+    "alerts": {
+      "nameRequired": "公會名稱不能為空。",
+      "confirmDelete": "您確定要刪除此公會嗎？這也將刪除關聯的玩家資料。"
+    }
+  },
+  "services": {
+    "api": {
+      "errors": {
+        "network": "網路錯誤。請檢查您的連線。",
+        "noResponse": "伺服器無回應。請稍後再試。",
+        "serverError": "伺服器錯誤："
+      }
+    }
+  }
+}

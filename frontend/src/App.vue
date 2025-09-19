@@ -1,7 +1,8 @@
 <template>
   <div id="app-container">
     <header>
-      <h1>Nikke 联盟练度管理</h1>
+      <h1>{{ t('greeting') }}</h1>
+      <LanguageSwitcher />
     </header>
 
     <nav class="main-nav">
@@ -16,8 +17,10 @@
 </template>
 
 <script setup>
-// All logic has been moved to specific views or composables.
-// This component is now only responsible for the main layout and routing.
+import { useI18n } from 'vue-i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+
+const { t } = useI18n();
 </script>
 
 <style>

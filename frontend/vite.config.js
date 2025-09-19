@@ -34,9 +34,9 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:7860',
         changeOrigin: true,
-        configure: (proxy, options) => {
-          // console.log('Proxying to:', options.target); // 可以在需要时取消注释
-        }
+        // configure: (proxy, options) => {
+        //   // console.log('Proxying to:', options.target); // 可以在需要时取消注释
+        // }
       }
     }
   },

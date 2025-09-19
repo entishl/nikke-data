@@ -1,30 +1,30 @@
 <template>
   <div class="union-management">
-    <h2>联盟管理</h2>
+    <h2>{{ t('unionManagement.title') }}</h2>
 
     <div class="add-union">
       <input
         v-model="newUnionName"
         type="text"
-        placeholder="输入新联盟名称"
+        :placeholder="t('unionManagement.add.placeholder')"
         :disabled="addUnionMutation.isPending.value"
         @keyup.enter="handleAddUnion"
       />
       <button :disabled="addUnionMutation.isPending.value" @click="handleAddUnion">
-        {{ addUnionMutation.isPending.value ? '添加中...' : '添加联盟' }}
+        {{ addUnionMutation.isPending.value ? t('unionManagement.add.addingButton') : t('unionManagement.add.addButton') }}
       </button>
     </div>
     <p v-if="addUnionMutation.isError.value" class="error">
-      添加失败: {{ addUnionMutation.error.value.message }}
+      {{ t('unionManagement.add.errorMessage') }} {{ addUnionMutation.error.value.message }}
     </p>
 
-    <div v-if="isLoading">正在加载联盟列表...</div>
-    <div v-else-if="isError">加载联盟列表失败: {{ error.message }}</div>
+    <div v-if="isLoading">{{ t('unionManagement.loading') }}</div>
+    <div v-else-if="isError">{{ t('unionManagement.loadError') }} {{ error.message }}</div>
     <table v-else-if="unions && unions.length">
       <thead>
         <tr>
-          <th>联盟名称</th>
-          <th>操作</th>
+          <th>{{ t('unionManagement.table.header.name') }}</th>
+          <th>{{ t('unionManagement.table.header.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -39,28 +39,30 @@
           </td>
           <td>
             <div v-if="editingUnionId === union.id">
-              <button @click="handleUpdateUnion(union.id)">保存</button>
-              <button class="secondary-btn" @click="cancelEdit">取消</button>
+              <button @click="handleUpdateUnion(union.id)">{{ t('unionManagement.table.buttons.save') }}</button>
+              <button class="secondary-btn" @click="cancelEdit">{{ t('unionManagement.table.buttons.cancel') }}</button>
             </div>
             <div v-else>
-              <button @click="startEdit(union)">编辑</button>
-              <button class="delete-btn" @click="handleDeleteUnion(union.id)">删除</button>
+              <button @click="startEdit(union)">{{ t('unionManagement.table.buttons.edit') }}</button>
+              <button class="delete-btn" @click="handleDeleteUnion(union.id)">{{ t('unionManagement.table.buttons.delete') }}</button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
     <div v-else>
-      <p>暂无联盟，请先添加一个。</p>
+      <p>{{ t('unionManagement.emptyState') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getUnions, addUnion, updateUnion, deleteUnion } from '../services/unionService';
 
+const { t } = useI18n();
 const queryClient = useQueryClient();
 
 // --- Data Fetching ---
@@ -102,7 +104,7 @@ const deleteUnionMutation = useMutation({
 // --- Event Handlers ---
 const handleAddUnion = () => {
   if (!newUnionName.value.trim()) {
-    alert('联盟名称不能为空。');
+    alert(t('unionManagement.alerts.nameRequired'));
     return;
   }
   addUnionMutation.mutate(newUnionName.value.trim());
@@ -120,14 +122,14 @@ const cancelEdit = () => {
 
 const handleUpdateUnion = (id) => {
   if (!editingUnionName.value.trim()) {
-    alert('联盟名称不能为空。');
+    alert(t('unionManagement.alerts.nameRequired'));
     return;
   }
   updateUnionMutation.mutate({ id, name: editingUnionName.value.trim() });
 };
 
 const handleDeleteUnion = (id) => {
-  if (confirm('确定要删除这个联盟吗？此操作将一并删除关联的玩家数据。')) {
+  if (confirm(t('unionManagement.alerts.confirmDelete'))) {
     deleteUnionMutation.mutate(id);
   }
 };

@@ -1,0 +1,66 @@
+{
+  "greeting": "こんにちは、世界！",
+  "playerDataHub": {
+    "title": "プレイヤーデータのインポート",
+    "playerList": {
+      "title": "プレイヤーリスト",
+      "wip": "（リスト表示は後のフェーズで実装されます）"
+    },
+    "loadingUnions": "ユニオンを読み込み中...",
+    "loadUnionsError": "ユニオンの読み込みに失敗しました。",
+    "form": {
+      "selectUnionLabel": "ユニオンを選択:",
+      "selectUnionPlaceholder": "ユニオンを選択してください",
+      "noUnionsPlaceholder": "最初にユニオンを作成してください",
+      "selectFileLabel": "JSONファイルを選択:",
+      "uploadingButton": "アップロード中...",
+      "uploadButton": "データをアップロード"
+    },
+    "uploadStatus": {
+      "successMessage": "アップロードに成功しました！",
+      "filesSuccess": "ファイルが成功し、",
+      "filesFailed": "ファイルが失敗しました。",
+      "errorMessage": "アップロードに失敗しました:"
+    },
+    "alerts": {
+      "selectUnionAndFile": "ユニオンと少なくとも1つのファイルを選択してください。"
+    }
+  },
+  "unionManagement": {
+    "title": "ユニオン管理",
+    "add": {
+      "placeholder": "新しいユニオン名を入力",
+      "addingButton": "追加中...",
+      "addButton": "ユニオンを追加",
+      "errorMessage": "追加に失敗しました:"
+    },
+    "loading": "ユニオンを読み込み中...",
+    "loadError": "ユニオンの読み込みに失敗しました:",
+    "table": {
+      "header": {
+        "name": "ユニオン名",
+        "actions": "アクション"
+      },
+      "buttons": {
+        "save": "保存",
+        "cancel": "キャンセル",
+        "edit": "編集",
+        "delete": "削除"
+      }
+    },
+    "emptyState": "まだユニオンがありません。追加してください。",
+    "alerts": {
+      "nameRequired": "ユニオン名は空にできません。",
+      "confirmDelete": "このユニオンを本当に削除しますか？関連するプレイヤーデータも削除されます。"
+    }
+  },
+  "services": {
+    "api": {
+      "errors": {
+        "network": "ネットワークエラー。接続を確認してください。",
+        "noResponse": "サーバーからの応答がありません。後でもう一度お試しください。",
+        "serverError": "サーバーエラー:"
+      }
+    }
+  }
+}
