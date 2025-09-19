@@ -1,13 +1,53 @@
-# IDE-specific files
+# =============================================================================
+# General
+# =============================================================================
+
+# IDE/Editor configuration
 .vscode/
 .idea/
 
 # OS-specific files
 .DS_Store
 Thumbs.db
-# Python virtual environment
-backend/venv/
-input/
 
+# Environment variables
 .env
-damage_simulation_plan.md
+*.local
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =============================================================================
+# Backend (Python/Flask)
+# =============================================================================
+
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database files
+lucky.db
+*.db
+*.db-journal
+
+# =============================================================================
+# Frontend (Vue.js)
+# =============================================================================
+
+# Node.js dependencies
+/frontend/node_modules/
+
+# Build artifacts
+/frontend/dist/
+/frontend/dist-ssr/
