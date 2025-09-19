@@ -15,7 +15,7 @@
           </select>
         </div>
         <div class="coor-level-input">
-          <label for="coor-level">企业等级:</label>
+          <label for="coor-level">企业循环等级:</label>
           <input type="number" id="coor-level" v-model.number="coor_level" />
         </div>
 
