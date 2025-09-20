@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query, Fo
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import traceback
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
@@ -21,13 +22,28 @@ from backend.services.user_service import UserService
 from backend.services.auth_service import AuthService
 from backend.services.union_service import UnionService
 
-from backend.models import create_db_and_tables
+from backend.models import create_db_and_tables_async
 
 # Set up logging
 setup_logging()
-create_db_and_tables()
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Asynchronous startup event to create database tables.
+    """
+    await create_db_and_tables_async()
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:15174"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
@@ -40,6 +56,8 @@ async def add_request_id(request: Request, call_next):
 
     # Store it in the context variable
     request_id_var.set(request_id)
+
+    logging.info(f"Request received: {request.method} {request.url.path}")
 
     # Process the request
     response = await call_next(request)
@@ -223,10 +241,11 @@ async def get_element_training_analysis(
 @app.post("/api/unions/", response_model=schemas.Union)
 async def create_union(
     union: schemas.UnionCreate,
+    db: AsyncSessionLocal = Depends(get_async_db),
     union_service: UnionService = Depends(get_union_service),
     current_user: models.User = Depends(auth.get_current_active_user)
 ):
-    db_union = await union_service.create_union(union, current_user.id)
+    db_union = await union_service.create_union(db, union, current_user.id)
     return db_union
 
 @app.get("/api/unions/", response_model=List[schemas.Union])
@@ -281,3 +300,8 @@ async def post_damage_simulation(
 if os.getenv("APP_ENV") == constants.PROD_ENV:
     app.mount("/", StaticFiles(directory=constants.STATIC_DIR, html=True), name="static")
 
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", "18000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)

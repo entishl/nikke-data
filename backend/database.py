@@ -1,22 +1,28 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 import os
+from urllib.parse import urlparse, urlunparse
 
-# Use DATABASE_URL from environment variables, with a fallback to a local SQLite DB
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./lucky.db")
+# Determine the database URL based on the environment
+if os.getenv("APP_ENV") == "development":
+    # Use an in-memory SQLite database for local development
+    SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+else:
+    # Use the DATABASE_URL from environment variables for production/Docker
+    SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+    if SQLALCHEMY_DATABASE_URL:
+        # Ensure the async driver is used for postgresql schemes
+        if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+            SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
+            SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Check if the database URL is for SQLite
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    # Add the aiosqlite driver for async support
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://", 1)
-elif SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 # Add similar replacements if you use other database schemes
 
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
     # connect_args is needed only for SQLite.
-    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite+aiosqlite") else {}
+    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 )
 
 AsyncSessionLocal = async_sessionmaker(

@@ -86,12 +86,7 @@ class CharacterSetting(Base):
     character_id = Column(Integer, unique=True, index=True)
     is_C = Column(Boolean, default=True, nullable=False)
 
-import asyncio
-
 async def create_db_and_tables_async():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-def create_db_and_tables():
-    asyncio.run(create_db_and_tables_async())
 

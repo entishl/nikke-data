@@ -12,10 +12,10 @@ class UnionService:
         """根据用户ID获取公会列表"""
         return await self.union_repo.get_by_user_id(user_id)
 
-    async def create_union(self, union: schemas.UnionCreate, user_id: int) -> models.Union:
+    async def create_union(self, db: AsyncSession, union: schemas.UnionCreate, user_id: int) -> models.Union:
         """为用户创建一个新公会"""
         db_union = models.Union(name=union.name, user_id=user_id)
-        return await self.union_repo.create(db_union)
+        return await self.union_repo.create(db, obj_in=db_union)
 
     async def update_union(self, union_id: int, name: str, user_id: int) -> Optional[models.Union]:
         """更新公会信息"""

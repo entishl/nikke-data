@@ -2,12 +2,14 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import App from './App.vue';
+import toastPlugin from './plugins/toast';
 import router from './router';
 import i18n from './plugins/i18n';
 
 import './assets/main.css';
 
 const app = createApp(App);
+app.use(toastPlugin);
 
 app.use(createPinia());
 app.use(router);

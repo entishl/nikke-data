@@ -1,5 +1,5 @@
 import { useI18n } from 'vue-i18n';
-import { useUnionStore } from '@/stores/unionStore';
+import { useUIStore } from '@/stores/uiStore';
 import i18n from '@/plugins/i18n';
 
 // 动态加载语言文件的函数
@@ -10,7 +10,7 @@ const loadLocaleMessages = async (locale) => {
 
 export function useLocale() {
   const { locale } = useI18n();
-  const unionStore = useUnionStore();
+  const uiStore = useUIStore();
 
   const setLocale = async (newLocale) => {
     // 加载新的语言文件
@@ -21,7 +21,7 @@ export function useLocale() {
     i18n.global.locale.value = newLocale;
     
     // 更新 Pinia store
-    unionStore.setLocale(newLocale);
+    uiStore.setLocale(newLocale);
     
     // 更新 HTML lang 属性
     document.querySelector('html').setAttribute('lang', newLocale);

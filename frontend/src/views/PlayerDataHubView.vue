@@ -54,12 +54,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useMutation } from '@tanstack/vue-query';
 import { getUnions, uploadPlayerData } from '../services/unionService';
 
 const { t } = useI18n();
+const { proxy } = getCurrentInstance();
 
 // --- State ---
 const selectedUnionId = ref(null);
@@ -83,7 +84,7 @@ const handleFileChange = (event) => {
 
 const handleUpload = () => {
   if (!selectedUnionId.value || filesToUpload.value.length === 0) {
-    alert(t('playerDataHub.alerts.selectUnionAndFile'));
+    proxy.$toast.error(t('playerDataHub.alerts.selectUnionAndFile'));
     return;
   }
 

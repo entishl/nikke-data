@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import UnionManagementView from '../views/UnionManagementView.vue';
-import PlayerDataHubView from '../views/PlayerDataHubView.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const routes = [
@@ -22,13 +20,13 @@ const routes = [
   {
     path: '/unions',
     name: 'UnionManagement',
-    component: UnionManagementView,
+    component: () => import('../views/UnionManagementView.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/players',
     name: 'PlayerDataHub',
-    component: PlayerDataHubView,
+    component: () => import('../views/PlayerDataHubView.vue'),
     meta: { requiresAuth: true },
   },
 ];
@@ -43,7 +41,7 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated;
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'Login' });
+    next({ name: 'Login', query: { redirect: to.fullPath } });
   } else {
     next();
   }

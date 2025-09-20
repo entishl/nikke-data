@@ -2,7 +2,6 @@ fastapi
 uvicorn
 SQLAlchemy
 python-multipart
-psycopg2-binary
 python-dotenv
 passlib
 bcrypt==3.2.0

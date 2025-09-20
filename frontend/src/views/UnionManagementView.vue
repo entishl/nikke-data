@@ -53,17 +53,28 @@
     <div v-else>
       <p>{{ t('unionManagement.emptyState') }}</p>
     </div>
+    <BaseModal
+      :visible="isModalVisible"
+      :title="t('unionManagement.modals.delete.title')"
+      :message="t('unionManagement.modals.delete.message')"
+      :confirm-button-text="t('unionManagement.modals.delete.confirmButton')"
+      :cancel-button-text="t('unionManagement.modals.delete.cancelButton')"
+      @confirm="confirmDelete"
+      @cancel="closeModal"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getUnions, addUnion, updateUnion, deleteUnion } from '../services/unionService';
+import BaseModal from '../components/BaseModal.vue';
 
 const { t } = useI18n();
 const queryClient = useQueryClient();
+const { proxy } = getCurrentInstance();
 
 // --- Data Fetching ---
 const { data: unions, isLoading, isError, error } = useQuery({
@@ -75,6 +86,8 @@ const { data: unions, isLoading, isError, error } = useQuery({
 const newUnionName = ref('');
 const editingUnionId = ref(null);
 const editingUnionName = ref('');
+const isModalVisible = ref(false);
+const unionIdToDelete = ref(null);
 
 // --- Mutations ---
 const addUnionMutation = useMutation({
@@ -82,7 +95,11 @@ const addUnionMutation = useMutation({
   onSuccess: () => {
     queryClient.invalidateQueries(['unions']);
     newUnionName.value = '';
+    proxy.$toast.success(t('unionManagement.toasts.addSuccess'));
   },
+  onError: () => {
+    proxy.$toast.error(t('unionManagement.toasts.addError'));
+  }
 });
 
 const updateUnionMutation = useMutation({
@@ -90,21 +107,29 @@ const updateUnionMutation = useMutation({
   onSuccess: () => {
     queryClient.invalidateQueries(['unions']);
     cancelEdit();
+    proxy.$toast.success(t('unionManagement.toasts.updateSuccess'));
   },
+  onError: () => {
+    proxy.$toast.error(t('unionManagement.toasts.updateError'));
+  }
 });
 
 const deleteUnionMutation = useMutation({
   mutationFn: deleteUnion,
   onSuccess: () => {
     queryClient.invalidateQueries(['unions']);
+    proxy.$toast.success(t('unionManagement.toasts.deleteSuccess'));
   },
+  onError: () => {
+    proxy.$toast.error(t('unionManagement.toasts.deleteError'));
+  }
 });
 
 
 // --- Event Handlers ---
 const handleAddUnion = () => {
   if (!newUnionName.value.trim()) {
-    alert(t('unionManagement.alerts.nameRequired'));
+    proxy.$toast.error(t('unionManagement.alerts.nameRequired'));
     return;
   }
   addUnionMutation.mutate(newUnionName.value.trim());
@@ -122,16 +147,27 @@ const cancelEdit = () => {
 
 const handleUpdateUnion = (id) => {
   if (!editingUnionName.value.trim()) {
-    alert(t('unionManagement.alerts.nameRequired'));
+    proxy.$toast.error(t('unionManagement.alerts.nameRequired'));
     return;
   }
   updateUnionMutation.mutate({ id, name: editingUnionName.value.trim() });
 };
 
 const handleDeleteUnion = (id) => {
-  if (confirm(t('unionManagement.alerts.confirmDelete'))) {
-    deleteUnionMutation.mutate(id);
+  unionIdToDelete.value = id;
+  isModalVisible.value = true;
+};
+
+const closeModal = () => {
+  isModalVisible.value = false;
+  unionIdToDelete.value = null;
+};
+
+const confirmDelete = () => {
+  if (unionIdToDelete.value) {
+    deleteUnionMutation.mutate(unionIdToDelete.value);
   }
+  closeModal();
 };
 </script>
 

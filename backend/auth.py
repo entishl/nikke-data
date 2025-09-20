@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -33,6 +34,7 @@ async def get_current_user(
     """
     FastAPI 依赖项，用于解码 JWT、验证用户并从数据库中获取当前用户。
     """
+    logging.info(f"Received token: {token}")
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

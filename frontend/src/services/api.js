@@ -2,7 +2,7 @@ import axios from 'axios';
 import i18n from '@/plugins/i18n';
 
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -57,7 +57,7 @@ export const login = (credentials) => {
   formData.append('username', credentials.username);
   formData.append('password', credentials.password);
 
-  return apiClient.post('/auth/token', formData, {
+  return apiClient.post('/api/auth/token', formData, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
@@ -65,7 +65,7 @@ export const login = (credentials) => {
 };
 
 export const register = (userInfo) => {
-  return apiClient.post('/users/', userInfo);
+  return apiClient.post('/api/users/', userInfo);
 };
 
 

@@ -5,7 +5,7 @@ import { defineStore } from 'pinia';
 // related to server data. For example, a theme preference, or the state of a
 // non-persistent popup.
 
-export const useUnionStore = defineStore('ui', {
+export const useUIStore = defineStore('ui', {
   state: () => ({
     locale: localStorage.getItem('locale') || 'en',
   }),
